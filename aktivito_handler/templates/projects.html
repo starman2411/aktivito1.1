@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Activito-projects</title>
+    <link rel="icon" href="{% static 'activito.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+{% csrf_token %}
+<nav class="d-flex flex-row  justify-content-between align-items-center p-3 px-md-4  bg-white border-bottom box-shadow flex-nowrap">
+      <a href="/" style="text-decoration: none;"><h1 class="font-weight-normal" style="color: #04E061;">Активито</h1></a>
+      <div class="my-2 my-md-0 mr-md-3">
+          <span style="margin-right:5px;">{{user.username}}</span>
+            <a class="btn btn-outline-success"  href="{% url 'logout'%}">Выйти</a>
+      </div>
+</nav>
+
+<div class="container " id="main-container">
+
+    <h1 class="text-center mt-2 mb-5">Мои проекты</h1>
+        <div class="d-flex flex-row justify-content-center mb-5">
+            <label class="m-2" for="new-project-name" >Создать проект: </label>
+            <input class="m-2" type="text" id="new-project-name">
+            <a class="btn btn-sm btn-success m-2" onClick='new_project()'>Создать</a>
+        </div>
+
+    {%for project in projects %}
+  <div class="row m-3">
+    <div class="col-3">
+        <span style="font-size:24px; word-break: break-all;">{{project}}</span>
+    </div>
+    <div class="col-3">
+        <a class="btn btn-sm btn-success mb-2" href="{% url 'project_editing_1' project%}">Редактор 1</a>
+    </div>
+      <div class="col-3">
+      <a class="btn btn-sm btn-success mb-2" href="{% url 'project_editing_2' project%}">Редактор 2</a>
+    </div>
+      <div class="col-3 ">
+      <span style="word-break: break-all;"><a href='https://aktivito.ru/media/projects/{{user.username}}/{{project}}/{{project}}.xlsx' style="margin: 10px;">https://aktivito.ru/media/projects/{{user.username}}/{{project}}/{{project}}.xlsx</a></span>
+    </div>
+  </div>
+    {%endfor%}
+</div>
+<script>
+let csrf = $("input[name=csrfmiddlewaretoken]").val();
+    function  new_project() {
+        let project_name = document.getElementById('new-project-name').value;
+        if (project_name) {
+            let formData = new FormData();
+            
+            formData.append("project_name", project_name);
+            $.ajax({
+            url: "{% url 'new_project' %}",
+
+            type: 'post',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: {
+                'project_name': project_name,
+	            'csrfmiddlewaretoken': csrf,
+            }, 
+            success: function(response) {
+
+                let new_row = `
+                    <div class="col-3">
+                        <span style="font-size:24px; word-break: break-all;">${project_name}</span>
+                    </div>
+                    <div class="col-3">
+                        <a class="btn btn-sm btn-success mb-2" href="/${project_name}/editing-1/">Редактор 1</a>
+                    </div>
+                      <div class="col-3">
+                      <a class="btn btn-sm btn-success mb-2" href="/${project_name}/editing-2/">Редактор 2</a>
+                    </div>
+                      <div class="col-3 ">
+                      <span style="word-break: break-all;">https://aktivito.ru/media/projects/sergeyivakov/test1.xlsx</span>
+                    </div>
+                `;
+                console.log(response);
+                let container = document.getElementById('main-container');
+                const row = document.createElement('div');
+                row.classList.add("row");
+                row.classList.add("m-3");
+                row.innerHTML = new_row;
+                container.appendChild(row);
+                }
+            })
+        }
+    }
+
+</script>
+</body>
+</html>

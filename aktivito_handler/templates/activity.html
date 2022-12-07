@@ -1,0 +1,840 @@
+{% load static %}
+{% load category_cascade%}
+{% load rows_tags%}
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Activito</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{% static 'airdatepicker/air-datepicker.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script><script src="{% static 'airdatepicker/air-datepicker.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" type="text/javascript"></script>
+    <script src="{% static 'airdatepicker/air-datepicker.js' %}"></script>
+    <script src="{% static 'myscripts.js'%}"></script>
+    <style type="text/css">
+       th {
+            text-align:center;
+       }
+
+       td > div > select {
+                height:68px;
+       }
+       .DateBegin > div > input {
+           height:68px;
+       }
+       .DateEnd > div > input {
+           height:68px;
+       }
+       td > div > textarea {
+            height:68px;
+       }
+
+              .DateBegin {
+            min-width: 250px;
+       }
+              .DateEnd {
+            min-width: 250px;
+       }
+              .ListingFee {
+            min-width: 150px;
+       }
+              .AdStatus {
+            min-width: 150px;
+       }
+                     .ContactMethod {
+            min-width: 300px;
+       }
+       .CompanyName {
+            min-width: 200px;
+       }
+              .ManagerName {
+            min-width: 200px;
+       }
+              .ContactPhone {
+            min-width: 160px;
+       }
+              .VideoUrl {
+            min-width: 210px;
+       }
+              .Address {
+            min-width: 210px;
+       }
+              .Category {
+            min-width: 300px;
+       }
+              .GoodsType {
+            min-width: 300px;
+       }
+                     .AdType {
+            min-width: 300px;
+       }
+                     .GoodsSubType {
+            min-width: 300px;
+       }
+              .Condition {
+            min-width: 160px;
+       }
+                     .Title {
+            min-width: 170px;
+       }
+                     .Description {
+            min-width: 210px;
+       }
+                     .Price {
+            min-width: 130px;
+       }
+                     .PriceType {
+            min-width: 150px;
+       }
+                     .FileInput {
+            min-width: 150px;
+       }
+                     .Images {
+            min-width: 830px;
+       }
+       .file-button{
+        background-color:#04E061;
+       }
+       .context-menu {
+	/* настройки шрифта */
+	font-family: sans-serif;
+	/* устанавливаем абсолютное позиционирование */
+  position: absolute;
+  /* не показываем меню с самого начала */
+  display: none;
+  /* цвет фона и настройки рамки вокруг меню */
+  background-color: #fff;
+  border: 1px solid #333;
+  padding: 5px;
+
+  /* Добавим тени */
+  -moz-box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+  box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+}
+/* общий стиль для списка */
+.context-menu ul { list-style: none; margin: 0; padding: 0; }
+
+/* стиль отдельных элементов */
+.context-menu ul li { margin: 0; padding: 0; background-color: #fff; display: block; }
+
+/* стиль ссылок в меню */
+.context-menu ul li span { color: #333; text-decoration: none; font-size: 12px; display: block; padding: 5px; }
+
+/* меняем фон в пункте меню при наведении мыши */
+.context-menu ul li span:hover { background-color: #eee; }
+
+    </style>
+</head>
+<body>
+{% csrf_token %}
+<div class="d-flex flex-row  justify-content-between align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow flex-nowrap">
+      <h1 class=" font-weight-normal" style="color: #04E061;">Активито</h1>
+      <nav class="my-2 my-md-0 mr-md-3">
+        <a class="btn btn-outline-success"  href="{% url 'projects' user.username%}">К проектам</a>
+        <a class="btn btn-outline-success" onclick="upload_table()" href="#">Сохранить</a>
+      </nav>
+</div>
+
+<div class="container" style="min-width:100%">
+    <div class="d-flex align-items-center mb-2">
+        <label for="project-name" style="width:160px; margin-left:8px;" >Название проекта:</label>
+        <input type="text" style="width:300px; height:30px;" id="project-name" class="form-control" value="{{project_name}}">
+    </div>
+    <div class="d-flex align-items-center mb-2">
+            <span style="width:120px; margin-left:8px;">Часовой пояс: </span>
+            <select id="timezone-selector" class="form-select form-select-sm" style="width:200px">
+                <option value="+02:00">UTC+2 (Калининград)</option>
+                <option value="+03:00" selected>UTC+3 (Москва)</option>
+                <option value="+04:00" >UTC+4 (Самара)</option>
+                <option value="+05:00" >UTC+5 (Екатеринбург)</option>
+                <option value="+06:00" >UTC+6 (Омск)</option>
+                <option value="+07:00" >UTC+7 (Красноярск)</option>
+                <option value="+08:00" >UTC+8 (Иркутск)</option>
+                <option value="+09:00" >UTC+9 (Якутия)</option>
+                <option value="+10:00" >UTC+10 (Владивосток)</option>
+                <option value="+11:00" >UTC+11 (Магадан)</option>
+                <option value="+12:00" >UTC+12 (Камчатка)</option>
+            </select>
+    </div>
+    <div class="d-flex align-items-center mb-3">
+        <label for="hide-end-time-box" style="width:190px; margin-left:8px;">Убрать столбец DateEnd</label>
+        <input type="checkbox" id="hide-end-time-box" onchange='hide_end_time()'>
+
+    </div>
+    <div>
+        <span style="cursor: pointer;margin-left:8px; color:red;" class="text-decoration-none" id="undo-button" onClick="undo()" >Отменить последнее действие
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+  <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+        </span>
+
+</svg>
+    </div>
+</div>
+    <div class="container d-flex justify-content-center" style="min-width:100%">
+<div class="container-fluid m-2  border" style="overflow-x: auto;overflow-y: auto; width: 95vw; height: 70vh;">
+{% get_category_cascade as category_cascade%}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Id</th>
+      <th  scope="col">DateBegin</th>
+      <th scope="col">DateEnd</th>
+      <th scope="col">ListingFee</th>
+      <th scope="col">AdStatus</th>
+      <th scope="col">ContactMethod</th>
+      <th scope="col">CompanyName</th>
+      <th scope="col">ManagerName</th>
+      <th scope="col">ContactPhone</th>
+      <th scope="col">VideoUrl</th>
+      <th scope="col">Address</th>
+      <th scope="col">Category</th>
+      <th scope="col">GoodsType</th>
+      <th scope="col">AdType</th>
+      <th scope="col">GoodsSubType</th>
+      <th scope="col">Condition</th>
+      <th scope="col">Title</th>
+      <th scope="col">Description</th>
+      <th scope="col">Price</th>
+      <th scope="col">PriceType</th>
+      <th scope="col"></th>
+      <th scope="col">Images</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {%for row in rows %}
+
+        <tr id="row-{{forloop.counter}}">
+      <th scope="row" style="vertical-align: middle;">{{forloop.counter}}</th>
+
+      <td class="DateBegin" >
+          <div class="DateBegin-wrapper" >
+              <input type="text" class="form-control" oncontextmenu="raise_date_context(event, 'DateBegin-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})"  data-previous="" value="{{row|get_item:'DateBegin'}}">
+          </div>
+      </td>
+
+      <td class="DateEnd">
+          <div class="DateEnd-wrapper">
+              <input disabled type="text" class="form-control" value="{{row|get_item:'DateEnd'}}">
+          </div>
+      </td>
+
+      <td class="ListingFee">
+          <div class="ListingFee-wrapper" >
+              <select class="form-select" oncontextmenu="raise_context(event, 'ListingFee-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected value="-1"></option>
+                  {% for fee in listing_fees%}
+                    {% if fee.fee == row|get_item:'ListingFee' %}
+                       <option selected value="{{forloop.counter0}}">{{fee.fee}}</option>
+                    {% else %}
+                  <option value="{{forloop.counter0}}">{{fee.fee}}</option>
+                    {%endif%}
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="AdStatus">
+          <div class="AdStatus-wrapper" >
+              <select class="form-select" oncontextmenu="raise_context(event, 'AdStatus-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for status in ad_statuses%}
+                    {% if status.status == row|get_item:'AdStatus' %}
+                       <option selected value="{{forloop.counter0}}">{{status.status}}</option>
+                    {% else %}
+                  <option value="{{forloop.counter0}}">{{status.status}}</option>
+                    {%endif%}
+
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="ContactMethod">
+          <div class="ContactMethod-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'ContactMethod-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for method in contact_methods%}
+                  {% if method.method == row|get_item:'ContactMethod' %}
+                       <option selected value="{{forloop.counter0}}">{{method.method}}</option>
+                    {% else %}
+                  <option value="{{forloop.counter0}}">{{method.method}}</option>
+                    {%endif%}
+
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="CompanyName">
+          <div class="CompanyName-wrapper" >
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'CompanyName-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'CompanyName'}}</textarea>
+          </div>
+      </td>
+
+      <td class="ManagerName">
+          <div class="ManagerName-wrapper">
+              <textarea  class="form-control" oncontextmenu="raise_context(event, 'ManagerName-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'ManagerName'}}</textarea>
+          </div>
+      </td>
+
+      <td class="ContactPhone">
+          <div class="ContactPhone-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'ContactPhone-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'ContactPhone'}}</textarea>
+          </div>
+      </td>
+
+      <td class="VideoUrl">
+          <div class="VideoUrl-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'VideoUrl-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'VideoUrl'}}</textarea>
+          </div>
+      </td>
+
+      <td class="Address">
+          <div class="Address-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Address-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'Address'}}</textarea>
+          </div>
+      </td>
+
+      <td class="Category">
+          <div class="Category-wrapper dropdown">
+             <select class="form-select"  onchange="fillGoodsTypes({{forloop.counter}});manual_input_log(this, {{forloop.counter}})" oncontextmenu="raise_context(event, 'Category-wrapper', {{forloop.counter}})"  onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+                 {% for category in categories%}
+                    {% if category.category_name == row|get_item:'Category' %}
+                       <option selected value="{{forloop.counter0}}">{{category.category_name}}</option>
+                    {% else %}
+                  <option value="{{forloop.counter0}}">{{category.category_name}}</option>
+                    {%endif%}
+
+                 {% endfor %}
+             </select>
+          </div>
+      </td>
+
+      <td class="GoodsType">
+          <div class="GoodsType-wrapper dropdown">
+             <select class="form-select"  onchange="fillGoodsSubTypes({{forloop.counter}});manual_input_log(this, {{forloop.counter}})" oncontextmenu="raise_context(event, 'GoodsType-wrapper', {{forloop.counter}})"  onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+                 {% if row|get_item:'GoodsType' %}
+                       <option selected value="{{forloop.counter0}}">{{row|get_item:'GoodsType'}}</option>
+                 {%endif%}
+             </select>
+          </div>
+      </td>
+
+      <td class="AdType">
+          <div class="AdType-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'AdType-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for type in ad_types%}
+                      {% if type.type == row|get_item:'AdType' %}
+                       <option selected value="{{forloop.counter0}}">{{type.type}}</option>
+                    {% else %}
+                    <option value="{{forloop.counter0}}">{{type.type}}</option>
+                    {%endif%}
+
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="GoodsSubType">
+          <div class="GoodsSubType-wrapper dropdown">
+             <select class="form-select" oncontextmenu="raise_context(event, 'GoodsSubType-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+                 {% if row|get_item:'GoodsSubType' %}
+                       <option selected value="{{forloop.counter0}}">{{row|get_item:'GoodsSubType'}}</option>
+                 {%endif%}
+             </select>
+          </div>
+      </td>
+
+      <td class="Condition">
+          <div class="Condition-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'Condition-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for condition in conditions%}
+                    {% if condition.condition == row|get_item:'Condition' %}
+                       <option selected value="{{forloop.counter0}}">{{condition.condition}}</option>
+                    {% else %}
+                      <option value="{{forloop.counter0}}">{{condition.condition}}</option>
+                    {%endif%}
+
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="Title">
+          <div class="Title-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Title-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'Title'}}</textarea>
+          </div>
+      </td>
+
+      <td class="Description">
+          <div class="Description-wrapper">
+              <textarea class="form-control"  oncontextmenu="raise_context(event, 'Description-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'Description'}}</textarea>
+          </div>
+      </td>
+
+      <td class="Price">
+          <div class="Price-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Price-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'Price'}}</textarea>
+          </div>
+      </td>
+
+      <td class="PriceType">
+          <div class="PriceType-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'PriceType-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for type in price_types%}
+                    {% if type.type == row|get_item:'PriceType' %}
+                       <option selected value="{{forloop.counter0}}">{{type.type}}</option>
+                    {% else %}
+                      <option value="{{forloop.counter0}}">{{type.type}}</option>
+                    {%endif%}
+
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="FileInput">
+          <div class="FileInput-wrapper">
+              <input  name="file_{{forloop.counter}}" class=" mb-1 form-control-sm " type="file" id="file_{{forloop.counter}}" multiple>
+              <button class="btn btn-success btn-sm file-button" onclick="upload_files({{forloop.counter}})" >Загрузить</button>
+          </div>
+      </td>
+      <td class="Images">
+          <div class="Images-wrapper">
+              <textarea class="form-control"  oncontextmenu="raise_context(event, 'Images-wrapper', {{forloop.counter}})" onchange="manual_input_log(this, {{forloop.counter}})" onfocus="save_old_input_value(this)" data-previous="">{{row|get_item:'Images'}}</textarea>
+          </div>
+      </td>
+
+    </tr>
+    {%endfor%}
+
+
+
+  </tbody>
+</table>
+    <div class="d-flex align-items-center mb-5">
+        <span>Добавить строки:</span>
+        <input type="text" id="new-rows-amount" class="form-control-sm" style="margin-left:10px;" value="1">
+        <span style="cursor: pointer;margin-left:10px;" class="text-decoration-none" id="add-row" onClick="add_row()" >
+
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#04E061" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+            </svg>
+         </span>
+
+    </div>
+
+</div>
+</div>
+<script>
+project_name = String(document.getElementById('project-name').value);
+if (project_name == ' '){
+    document.getElementById('project-name').value = '';
+}
+
+
+let rows = document.querySelectorAll('tbody > tr');
+    rows.forEach((row,key) => {
+        let row_id = row.id.split('-')[1];
+        let wrap = row.getElementsByClassName('DateBegin-wrapper')[0];
+        let wrap_end = row.getElementsByClassName('DateEnd-wrapper')[0];
+        let input_date_begin = wrap.querySelector('input');
+        let input_date_end = wrap_end.querySelector('input');
+
+        let air = new AirDatepicker(input_date_begin, {
+        timepicker: true,
+        dateFormat(date, x=row_id) {
+
+
+            return get_string_date(date);
+        },
+
+        onSelect({date, formattedDate, datepicker}){
+
+
+
+            let next_date = new Date(date);
+            next_date.setDate(next_date.getDate() + 30);
+            input_date_end.value = get_string_date(next_date);
+            manual_input_log(datepicker.$el,row_id);
+        },
+
+    });
+    air.$el.onclick = function(event){if((event.which != 3) ) {air.show(); event.currentTarget.dataset.previous = event.currentTarget.value}};
+    });
+
+</script>
+
+<script>
+
+    function fillGoodsTypes(row_number) {
+    const category_cascade = JSON.parse("{{category_cascade|escapejs }}");
+    const row = document.getElementById('row-' + String(row_number));
+    const goods_type_select = row.getElementsByClassName('GoodsType-wrapper')[0].querySelector('select');
+    const goods_subtype_select = row.getElementsByClassName('GoodsSubType-wrapper')[0].querySelector('select');
+    const category_select = row.getElementsByClassName('Category-wrapper')[0].querySelector('select');
+    const category = category_select.options[category_select.selectedIndex].text;
+    const goods_types = Object.keys(category_cascade[category]);
+
+    goods_type_select.replaceChildren();
+    goods_subtype_select.replaceChildren();
+    goods_type_select[0] = new Option('',0);
+    goods_types.forEach((element,key) => {
+        goods_type_select[key+1] = new Option(element,key);
+    });
+}
+
+function fillGoodsSubTypes(row_number) {
+    const category_cascade = JSON.parse("{{category_cascade|escapejs }}");
+    const row = document.getElementById('row-' + String(row_number));
+    const goods_subtype_select = row.getElementsByClassName('GoodsSubType-wrapper')[0].querySelector('select');
+    const category_select = row.getElementsByClassName('Category-wrapper')[0].querySelector('select');
+    const category = category_select.options[category_select.selectedIndex].text;
+    const goods_types_select = row.getElementsByClassName('GoodsType-wrapper')[0].querySelector('select');
+    const goods_type = goods_types_select.options[goods_types_select.selectedIndex].text;
+    const goods_subtypes = category_cascade[category][goods_type];
+
+    goods_subtype_select.replaceChildren();
+    goods_subtype_select[0] = new Option('',0);
+    goods_subtypes.forEach((element,key) => {
+        goods_subtype_select[key+1] = new Option(element,key);
+    });
+}
+</script>
+<script>
+    function add_row() {
+
+    row_amount = Number(document.getElementById('new-rows-amount').value);
+    const table = document.querySelector('tbody');
+    last_row_id = table.children.length;
+    for (let i=0; i<row_amount;i++){
+    last_row = table.querySelector('tr:last-child');
+    if (last_row){
+        row_id = Number(last_row.id.split('-')[1]) + 1;
+    }
+    else{row_id=1}
+
+
+
+
+    new_row_html = `
+      <th scope="row" style="vertical-align: middle;">${row_id}</th>
+
+      <td class="DateBegin" >
+          <div class="DateBegin-wrapper" >
+              <input type="text" id="date-begin-${row_id}" class="form-control"  oncontextmenu="raise_date_context(event, 'DateBegin-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})"  data-previous="">
+          </div>
+      </td>
+
+      <td class="DateEnd">
+          <div class="DateEnd-wrapper">
+              <input type="text" id="date-end-${row_id}" class="form-control" disabled>
+          </div>
+      </td>
+
+      <td class="ListingFee">
+          <div class="ListingFee-wrapper" >
+              <select class="form-select" oncontextmenu="raise_context(event, 'ListingFee-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for fee in listing_fees%}
+                       <option value="{{forloop.counter0}}">{{fee.fee}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="AdStatus">
+          <div class="AdStatus-wrapper" >
+              <select class="form-select" oncontextmenu="raise_context(event, 'AdStatus-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for status in ad_statuses%}
+                       <option value="{{forloop.counter0}}">{{status.status}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="ContactMethod">
+          <div class="ContactMethod-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'ContactMethod-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for method in contact_methods%}
+                       <option value="{{forloop.counter0}}">{{method.method}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="CompanyName">
+          <div class="CompanyName-wrapper" >
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'CompanyName-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="ManagerName">
+          <div class="ManagerName-wrapper">
+              <textarea  class="form-control" oncontextmenu="raise_context(event, 'ManagerName-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="ContactPhone">
+          <div class="ContactPhone-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'ContactPhone-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="VideoUrl">
+          <div class="VideoUrl-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'VideoUrl-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="Address">
+          <div class="Address-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Address-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="Category">
+          <div class="Category-wrapper dropdown">
+             <select class="form-select"  onchange="fillGoodsTypes(${row_id});manual_input_log(this, ${row_id})"  oncontextmenu="raise_context(event, 'Category-wrapper', ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+                 {% for category in categories%}
+                   <option value="{{forloop.counter0}}">{{category.category_name}}</option>
+                 {% endfor %}
+             </select>
+          </div>
+      </td>
+
+      <td class="GoodsType">
+          <div class="GoodsType-wrapper dropdown">
+             <select class="form-select"  onchange="fillGoodsSubTypes(${row_id});manual_input_log(this, ${row_id})" oncontextmenu="raise_context(event, 'GoodsType-wrapper', ${row_id})"  onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+             </select>
+          </div>
+      </td>
+
+      <td class="AdType">
+          <div class="AdType-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'AdType-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for type in ad_types%}
+                       <option value="{{forloop.counter0}}">{{type.type}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="GoodsSubType">
+          <div class="GoodsSubType-wrapper dropdown">
+             <select class="form-select" oncontextmenu="raise_context(event, 'GoodsSubType-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                 <option selected></option>
+             </select>
+          </div>
+      </td>
+
+      <td class="Condition">
+          <div class="Condition-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'Condition-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for condition in conditions%}
+                       <option value="{{forloop.counter0}}">{{condition.condition}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="Title">
+          <div class="Title-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Title-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="Description">
+          <div class="Description-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Description-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="Price">
+          <div class="Price-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Price-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>
+
+      <td class="PriceType">
+          <div class="PriceType-wrapper">
+              <select class="form-select" oncontextmenu="raise_context(event, 'PriceType-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous="">
+                  <option selected></option>
+                  {% for type in price_types%}
+                       <option value="{{forloop.counter0}}">{{type.type}}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      </td>
+
+      <td class="FileInput">
+          <div class="FileInput-wrapper">
+              <input  name="file_${row_id}" class=" mb-1 form-control-sm " type="file" id="file_${row_id}" multiple>
+              <button class="btn btn-success btn-sm file-button" onclick="upload_files(${row_id})">Загрузить</button>
+          </div>
+      </td>
+      <td class="Images">
+          <div class="Images-wrapper">
+              <textarea class="form-control" oncontextmenu="raise_context(event, 'Images-wrapper', ${row_id})" onchange="manual_input_log(this, ${row_id})" onfocus="save_old_input_value(this)" data-previous=""></textarea>
+          </div>
+      </td>`;
+
+
+    const new_row = document.createElement('tr');
+    new_row.innerHTML = new_row_html;
+    new_row.id = `row-${row_id}`;
+    table.appendChild(new_row);
+    let input_date_begin = document.getElementById(`row-${row_id}`).getElementsByClassName('DateBegin-wrapper')[0].querySelector('input');
+    let input_date_end = document.getElementById(`row-${row_id}`).getElementsByClassName('DateEnd-wrapper')[0].querySelector('input');
+
+    let air = new AirDatepicker(input_date_begin, {
+        timepicker: true,
+        dateFormat(date, x=row_id) {
+
+
+            return get_string_date(date);
+        },
+
+        onSelect({date, formattedDate, datepicker}){
+            let next_date = new Date(date);
+            next_date.setDate(next_date.getDate() + 30);
+            input_date_end.value = get_string_date(next_date);
+            manual_input_log(datepicker.$el,row_id);
+        },
+
+    });
+    air.$el.onclick = function(event){if((event.which != 3) ) {air.show(); event.currentTarget.dataset.previous = event.currentTarget.value}};
+    }
+
+addRowsAddLog('add_rows', [last_row_id + 1, last_row_id + row_amount]);
+}
+
+let csrf = $("input[name=csrfmiddlewaretoken]").val();
+function  upload_files(row_id) {
+    let formData = new FormData();
+    files = document.getElementById(`file_${row_id}`).files;
+    for (k=0;k<files.length;k++) {
+        formData.append('files',files[k])
+    }
+    formData.append("csrfmiddlewaretoken", csrf);
+    $.ajax({
+    url: "{% url 'load_files' %}",
+    dataType: 'json', // what to expect back from server
+    cache: false,
+    contentType: false,
+    processData: false,
+    type: 'post',
+    data: formData,
+    success: function(response) {
+        urls = response['urls'];
+        let row = document.getElementById('row-' + String(row_id));
+        let images_wrapper = row.getElementsByClassName('Images-wrapper')[0];
+        let images_textarea = images_wrapper.querySelector('textarea');
+        images_textarea.value = urls.join(' | ');
+    }
+    })
+}
+
+function  upload_table() {
+    project_name = String(document.getElementById('project-name').value);
+
+    if (!(project_name)) {
+        alert('Введите название проекта!');
+        return(false);
+    }
+    let formData = new FormData();
+
+    formData.append('json_table',pack_to_json());
+    formData.append('project_name', document.getElementById('project-name').value);
+    formData.append("csrfmiddlewaretoken", csrf);
+    $.ajax({
+    url: "{% url 'load_table' %}",
+    dataType: 'json', // what to expect back from server
+    cache: false,
+    contentType: false,
+    processData: false,
+    type: 'post',
+    data: formData,
+    success: function(response) {
+        console.log('UPLOADED');
+    }
+    })
+}
+</script>
+
+<script>
+    function pack_to_json() {
+        let rows = document.querySelectorAll('tbody > tr');
+        let rows_amount = rows.length;
+        let table = [];
+
+        function get_select_value(row, class_name) {
+            let select = row.getElementsByClassName(class_name)[0].querySelector('select');
+            if (select.options[select.selectedIndex]){
+            return(select.options[select.selectedIndex].text);
+            }
+            else{
+            return('');
+            }
+
+        }
+
+        for (id = 1; id<=rows_amount; id++) {
+
+            let row = document.getElementById('row-'+ String(id));
+            let row_string = {
+                'Id' : String(id),
+                'DateBegin' : row.getElementsByClassName('DateBegin-wrapper')[0].querySelector('input').value,
+                'DateEnd' : row.getElementsByClassName('DateEnd-wrapper')[0].querySelector('input').value,
+
+                'ListingFee' : get_select_value(row, 'ListingFee-wrapper'),
+                'AdStatus' : get_select_value(row, 'AdStatus-wrapper'),
+                'ContactMethod' : get_select_value(row, 'ContactMethod-wrapper'),
+
+                'CompanyName' : row.getElementsByClassName('CompanyName-wrapper')[0].querySelector('textarea').value,
+                'ManagerName' : row.getElementsByClassName('ManagerName-wrapper')[0].querySelector('textarea').value,
+                'ContactPhone' : row.getElementsByClassName('ContactPhone-wrapper')[0].querySelector('textarea').value,
+                'VideoUrl' : row.getElementsByClassName('VideoUrl-wrapper')[0].querySelector('textarea').value,
+                'Address' : row.getElementsByClassName('Address-wrapper')[0].querySelector('textarea').value,
+
+                'Category' : get_select_value(row, 'Category-wrapper'),
+                'GoodsType' : get_select_value(row, 'GoodsType-wrapper'),
+                'AdType' : get_select_value(row, 'AdType-wrapper'),
+                'GoodsSubType' : get_select_value(row, 'GoodsSubType-wrapper'),
+                'Condition' : get_select_value(row, 'Condition-wrapper'),
+
+                'Title' : row.getElementsByClassName('Title-wrapper')[0].querySelector('textarea').value,
+                'Description' : row.getElementsByClassName('Description-wrapper')[0].querySelector('textarea').value,
+                'Price' : row.getElementsByClassName('Price-wrapper')[0].querySelector('textarea').value,
+
+                'PriceType' : get_select_value(row, 'PriceType-wrapper'),
+                'Images' : row.getElementsByClassName('Images-wrapper')[0].querySelector('textarea').value,
+            };
+                table.push(row_string);
+        }
+        return(JSON.stringify(table));
+}
+
+</script>
+
+</body>
+</html>

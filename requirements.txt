@@ -1,0 +1,7 @@
+django
+pandas
+pillow
+openpyxl
+xlsxwriter
+xlrd
+exif
