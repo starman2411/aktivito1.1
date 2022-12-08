@@ -256,7 +256,7 @@ def projects_view(request, username):
     projects_directory = f'{settings.BASE_DIR}/media/projects/{username}'
     files = os.listdir(projects_directory)
     projects = files
-    context = {'projects': projects[::-1]}
+    context = {'projects': projects[::-1], 'domen_adress': settings.FULL_DOMEN_ADRESS}
     return render(request, 'projects.html', context=context)
 
 def new_project_view(request):

@@ -39,7 +39,7 @@
       <a class="btn btn-sm btn-success mb-2" href="{% url 'project_editing_2' project%}">Редактор 2</a>
     </div>
       <div class="col-3 ">
-      <span style="word-break: break-all;"><a href='https://aktivito.ru/media/projects/{{user.username}}/{{project}}/{{project}}.xlsx' style="margin: 10px;">https://aktivito.ru/media/projects/{{user.username}}/{{project}}/{{project}}.xlsx</a></span>
+      <span style="word-break: break-all;"><a href='{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx' style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx</a></span>
     </div>
   </div>
     {%endfor%}
