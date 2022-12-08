@@ -74,7 +74,7 @@ let csrf = $("input[name=csrfmiddlewaretoken]").val();
                       <a class="btn btn-sm btn-success mb-2" href="/${project_name}/editing-2/">Редактор 2</a>
                     </div>
                       <div class="col-3 ">
-                      <span style="word-break: break-all;">https://aktivito.ru/media/projects/sergeyivakov/test1.xlsx</span>
+                      <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx</a></span>
                     </div>
                 `;
                 console.log(response);
