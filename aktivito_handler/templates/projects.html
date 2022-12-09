@@ -110,10 +110,10 @@
         <table id="projects-table" class="table" >
             <thead>
                 <tr>
-                    <th style="width: 30%"></th>
+                    <th style="width: 25%"></th>
                     <th style="width: 10%"></th>
                     <th style="width: 10% "></th>
-                    <th style="width: 42%" ></th>
+                    <th style="width: 47%" ></th>
                     <th style="width: 8%" ></th>
                 </tr>
             </thead>
@@ -121,7 +121,7 @@
 
             {%for project in projects %}
                 <tr >
-                    <td  style="width: 30% ">
+                    <td  style="width: 25% ">
                         <div>
                             <span class='project-name-span' style="font-size:24px;word-break: break-all;">{{project}}</span>
                         </div>
@@ -136,7 +136,7 @@
                             <a class="btn btn-sm btn-outline-success " href="{% url 'project_editing_2' project%}">Редактор 2</a>
                         </div>
                     </td>
-                    <td style="width: 42% ">
+                    <td style="width: 47% ">
                         <div>
                             <span style="word-break: break-all;"><a href='{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx' >{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx</a></span>
                         </div>
@@ -204,7 +204,7 @@ let csrf = $("input[name=csrfmiddlewaretoken]").val();
                 if (response.message == 'success'){
                 let new_row = `
                 <tr >
-                    <td  style="width: 30% ">
+                    <td  style="width: 25% ">
                         <div>
                             <span class='project-name-span' style="font-size:24px;word-break: break-all;">${project_name}</span>
                         </div>
@@ -219,7 +219,7 @@ let csrf = $("input[name=csrfmiddlewaretoken]").val();
                             <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-2/">Редактор 2</a>
                         </div>
                     </td>
-                    <td style="width: 42% ">
+                    <td style="width: 47% ">
                         <div>
                             <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx</a></span>
                         </div>
@@ -319,7 +319,7 @@ function load_project(){
                     let project_name = response.project_name;
                                                    let new_row = `
                 <tr >
-                    <td  style="width: 30% ">
+                    <td  style="width: 25% ">
                         <div>
                             <span class='project-name-span' style="font-size:24px;word-break: break-all;">${project_name}</span>
                         </div>
@@ -334,7 +334,7 @@ function load_project(){
                             <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-2/">Редактор 2</a>
                         </div>
                     </td>
-                    <td style="width: 42% ">
+                    <td style="width: 47% ">
                         <div>
                             <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx</a></span>
                         </div>
