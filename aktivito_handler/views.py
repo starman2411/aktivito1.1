@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Category, ListingFee, AdStatus, ContactMethod, Condition, PriceType, AdType
+from .models import Category, ListingFee, AdStatus, ContactMethod, Condition, PriceType, AdType, Project
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 import itertools
@@ -14,6 +14,9 @@ import random
 from PIL import Image, ImageOps
 from unique_maker.models import Preset
 import numpy as np
+import openpyxl
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 # Create your views here.
 
 
@@ -162,7 +165,6 @@ def _handle_uploaded_file(f, username, project_name):
     with open(path, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-        print(name)
         return f'projects/{username}/{project_name}/pics/{name}'
 
 @login_required(login_url = '/login/')
@@ -209,10 +211,13 @@ def load_table(request):
     df = pd.read_json(request.POST['json_table'], orient='columns')
 
     project_name = request.POST['project_name']
+
     if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
         os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
         os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
-
+        new_project = Project(creator=request.user.username, authors=[request.user.username, ],
+                              project_name=project_name)
+        new_project.save()
     with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{project_name}/{project_name}.xlsx', engine='xlsxwriter',
                         engine_kwargs={"options": {"strings_to_urls": False}}) as writer:
         df.to_excel(writer,  index=False, sheet_name='Sheet1')
@@ -240,6 +245,7 @@ def load_table(request):
         worksheet.set_column(18, 18, int(150/7.25))
         worksheet.set_column(19, 19, int(150/7.25))
         worksheet.set_column(20, 20, int(830/7.25))
+
     return JsonResponse({})
 
 
@@ -253,44 +259,86 @@ def projects_view(request, username):
         pass
     else:
         os.mkdir(f'{settings.BASE_DIR}/media/projects/{username}')
-    projects_directory = f'{settings.BASE_DIR}/media/projects/{username}'
-    files = os.listdir(projects_directory)
-    projects = files
+    projects = Project.objects.filter(authors__contains=[request.user.username])
     context = {'projects': projects[::-1], 'domen_adress': settings.FULL_DOMEN_ADRESS}
     return render(request, 'projects.html', context=context)
 
 def new_project_view(request):
-    project_name = request.POST['project_name']
-    if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
-        df = pd.DataFrame()
-        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
-        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
 
-        with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{project_name}/{project_name}.xlsx', engine='xlsxwriter',
-                            engine_kwargs={"options": {"strings_to_urls": False}}) as writer:
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
-            worksheet = writer.sheets['Sheet1']
-            worksheet.set_column(0, 0, int(250 / 7.25))
-            worksheet.set_column(1, 1, int(250 / 7.25))
-            worksheet.set_column(2, 2, int(150 / 7.25))
-            worksheet.set_column(3, 3, int(150 / 7.25))
-            worksheet.set_column(4, 4, int(300 / 7.25))
-            worksheet.set_column(5, 5, int(200 / 7.25))
-            worksheet.set_column(6, 6, int(200 / 7.25))
-            worksheet.set_column(7, 7, int(160 / 7.25))
-            worksheet.set_column(8, 8, int(210 / 7.25))
-            worksheet.set_column(9, 9, int(210 / 7.25))
-            worksheet.set_column(10, 10, int(300 / 7.25))
-            worksheet.set_column(11, 11, int(300 / 7.25))
-            worksheet.set_column(12, 12, int(300 / 7.25))
-            worksheet.set_column(13, 13, int(300 / 7.25))
-            worksheet.set_column(14, 14, int(160 / 7.25))
-            worksheet.set_column(15, 15, int(70 / 7.25))
-            worksheet.set_column(16, 16, int(210 / 7.25))
-            worksheet.set_column(17, 17, int(130 / 7.25))
-            worksheet.set_column(18, 18, int(150 / 7.25))
-            worksheet.set_column(19, 19, int(150 / 7.25))
-            worksheet.set_column(20, 20, int(830 / 7.25))
-        return JsonResponse({'message': 'success', 'project_name': project_name})
+    project_name = request.POST['project_name']
+
+    if project_name not in [project.project_name for project in Project.objects.filter(authors__contains=[request.user.username])]:
+        if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
+            new_project = Project(creator=request.user.username, authors=[request.user.username,], project_name = project_name)
+            df = pd.DataFrame()
+            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
+            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
+
+            with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{project_name}/{project_name}.xlsx', engine='xlsxwriter',
+                                engine_kwargs={"options": {"strings_to_urls": False}}) as writer:
+                df.to_excel(writer, index=False, sheet_name='Sheet1')
+                worksheet = writer.sheets['Sheet1']
+                worksheet.set_column(0, 0, int(250 / 7.25))
+                worksheet.set_column(1, 1, int(250 / 7.25))
+                worksheet.set_column(2, 2, int(150 / 7.25))
+                worksheet.set_column(3, 3, int(150 / 7.25))
+                worksheet.set_column(4, 4, int(300 / 7.25))
+                worksheet.set_column(5, 5, int(200 / 7.25))
+                worksheet.set_column(6, 6, int(200 / 7.25))
+                worksheet.set_column(7, 7, int(160 / 7.25))
+                worksheet.set_column(8, 8, int(210 / 7.25))
+                worksheet.set_column(9, 9, int(210 / 7.25))
+                worksheet.set_column(10, 10, int(300 / 7.25))
+                worksheet.set_column(11, 11, int(300 / 7.25))
+                worksheet.set_column(12, 12, int(300 / 7.25))
+                worksheet.set_column(13, 13, int(300 / 7.25))
+                worksheet.set_column(14, 14, int(160 / 7.25))
+                worksheet.set_column(15, 15, int(70 / 7.25))
+                worksheet.set_column(16, 16, int(210 / 7.25))
+                worksheet.set_column(17, 17, int(130 / 7.25))
+                worksheet.set_column(18, 18, int(150 / 7.25))
+                worksheet.set_column(19, 19, int(150 / 7.25))
+                worksheet.set_column(20, 20, int(830 / 7.25))
+            new_project.save()
+            return JsonResponse({'message': 'success', 'project_name': project_name})
+        else:
+            return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+    return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+
+def delete_project(request):
+    project_name = request.POST['project_name']
+    username = request.user.username
+    if project_name in [project.project_name for project in Project.objects.filter(authors__contains=[username])]:
+        project = Project.objects.filter(authors__contains=[username], project_name=project_name)[0]
+        authors = list(project.authors)
+        authors.remove(username)
+        project.authors = authors
+        project.save()
+
     else:
-        return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+        return JsonResponse({'notexist': 'success'})
+    return JsonResponse({'message': 'success'})
+
+
+def load_project(request):
+    file = request.FILES['file']
+    if file:
+        project_name = file.name.split('.')[0]
+
+        if project_name not in [project.project_name for project in
+                                Project.objects.filter(authors__contains=[request.user.username])]:
+            if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
+                new_project = Project(creator=request.user.username, authors=[request.user.username, ],
+                                      project_name=project_name)
+                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
+                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
+
+                path = default_storage.save(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{file.name}', ContentFile(file.read()))
+                new_project.save()
+                return JsonResponse({'message': 'success', 'project_name': project_name})
+
+            return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+        else:
+            return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+    return JsonResponse({'message': 'error'})
+
