@@ -253,6 +253,29 @@ def load_table(request):
 
     df = pd.DataFrame(json_table_for_pd)
     df = df.rename(columns={'IdRow': 'Id'})
+    df = df.reindex(columns=[
+      'Id',
+      'DateBegin',
+      'DateEnd',
+      'ListingFee',
+      'AdStatus',
+      'ContactMethod',
+      'CompanyName',
+      'ManagerName',
+      'ContactPhone',
+      'VideoUrl',
+      'Address',
+      'Category',
+      'GoodsType',
+      'AdType',
+      'GoodsSubType',
+      'Condition',
+      'Title',
+      'Description',
+      'Price',
+      'PriceType',
+      'Images'])
+
 
     project_name = request.POST['project_name']
 

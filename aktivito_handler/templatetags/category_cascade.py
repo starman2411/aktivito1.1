@@ -56,8 +56,9 @@ def get_conditions():
     return json.dumps(output, ensure_ascii=False)
 
 @register.simple_tag
-def get_conditions():
+def get_price_types():
     output = []
     for type in PriceType.objects.all():
         output.append(type.type)
     return json.dumps(output, ensure_ascii=False)
+

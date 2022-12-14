@@ -87,7 +87,7 @@
       <nav class="my-2 my-md-0 mr-md-3">
           <a class="btn btn-outline-success"  href="{% url 'projects' user.username%}">К проектам</a>
           <a class="btn btn-outline-success" onclick="upload_table()" href="#">Сохранить</a>
-          <button class="btn btn-outline-success" onclick="print_table()" >print</button>
+
       </nav>
 </div>
 
@@ -213,7 +213,6 @@
 		<script>
 
 		projectData = JSON.parse("{{rows|escapejs}}");
-		console.log(projectData);
 		let selects_library= {};
 		{% get_category_cascade as category_cascade%}
 		{% get_contact_methods as contact_methods_list%}
@@ -221,12 +220,14 @@
 		{% get_ad_statuses as ad_statuses%}
 		{% get_ad_types as ad_types%}
 		{% get_conditions as conditions%}
+		{% get_price_types as price_types%}
 		const category_cascade = JSON.parse("{{category_cascade|escapejs }}");
 		selects_library['ContactMethod'] = JSON.parse("{{contact_methods_list|escapejs }}");
 		selects_library['ListingFee'] = JSON.parse("{{listing_fees|escapejs }}");
 		selects_library['AdStatus'] = JSON.parse("{{ad_statuses|escapejs }}");
 		selects_library['AdType'] = JSON.parse("{{ad_types|escapejs }}");
 		selects_library['Condition'] = JSON.parse("{{conditions|escapejs }}");
+		selects_library['PriceType'] = JSON.parse("{{price_types|escapejs }}");
 		</script>
 
     <script>

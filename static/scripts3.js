@@ -67,7 +67,7 @@ class DateBeginInputComp {
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
         this.eGui = document.createElement('div');
-        // console.log('init', ' ', params.columnName);
+
         this.eGui.innerHTML = `
           <div class="${columnName}-wrapper" >
               <input type="text" class="form-control input-field" value="${value}">
@@ -115,7 +115,7 @@ class DateBeginInputComp {
         const value = params.data[params.columnName]['value'];
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
-        console.log('refresh', id)
+
         this.eGui.innerHTML = `
           <div class="${columnName}-wrapper" >
               <input type="text" class="form-control input-field" value="${value}">
@@ -332,7 +332,7 @@ class SelectComp {
         const value = params.data[params.columnName]['value'];
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
-        // console.log('init', columnName);
+
         let selectItems = [];
         let row = params.node; 
         if (columnName == 'Category') {
@@ -393,7 +393,7 @@ class SelectComp {
         const value = params.data[params.columnName]['value'];
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
-        // console.log('refreshing', ' ', params.columnName);
+
         let selectItems = [];
         let row = params.node; 
         if (columnName == 'Category') {
@@ -589,7 +589,7 @@ let gridOptions = {
   rowHeight: 68,
   getRowId: params => params.data.id,
   suppressCellSelection: true,
-  
+
 };
 
 
@@ -620,12 +620,12 @@ function get_string_date(date) {
 
 
 function delete_row(id){
-  // console.log(id);
+
   let row = gridOptions.api.getRowNode(String(id)); 
   let rowData = row.data;
   const res = gridOptions.api.applyTransaction({remove: [row.data]});
   let dataRow = projectData.find(o => o.id === String(id));
-  // console.log(dataRow, projectData.indexOf(dataRow));
+
   let index = projectData.indexOf(dataRow);
   projectData.splice(index, 1);
   addLog('delete_row', {[id]: {'previous': rowData}});
@@ -633,7 +633,7 @@ function delete_row(id){
 }
 
 function delete_rows(){
-  // console.log('deleting');
+
   let rowsData = {}
     let from = Number(document.getElementById('delete-amount-from').value);
     if (from <1){
@@ -686,7 +686,7 @@ function compareLog(a, b) {
 
 function update_storage(cvalue) {
       logsStorage.push(cvalue);
-      console.log(logsStorage);
+
     }
 
 
@@ -710,7 +710,7 @@ function addLog(action, cells) {
         'cells': cells,
         };
     change_log.push(new_log);
-    console.log(logsStorage);
+
 
 }
 
@@ -883,22 +883,21 @@ function continue_to_end_with_step(current_id) {
     let current_row = gridOptions.api.getRowNode(current_id);
 
     ids = getIds(projectData, current_id);
-    // console.log(ids);
     for (let index = 1; index < ids.length; index++){
 
             let id = ids[index];
-            // console.log(id);
+
             let previous_row = gridOptions.api.getRowNode(ids[index-1]); 
             let next_row = gridOptions.api.getRowNode(id);
             let previous = previous_row.data['DateBegin'];
-            // console.log(id, previous);
+
             const logKey1 = `${'DateBegin'}-${String(id)}`;
             const logKey2 = `${'DateEnd'}-${String(id)}`;
             let new_value = new Date(previous['value'].split('+')[0]);
             let previous_value_1 = next_row.data['DateBegin'];
             let previous_value_2 = next_row.data['DateEnd'];
             new_value.setDate(new_value.getDate() + 1);
-            // console.log(get_string_date(new_value));
+
             next_row.setDataValue('DateBegin', {'value':get_string_date(new_value),'color': previous['color']});
 
             let next_date = new Date(get_string_date(new_value));
@@ -959,7 +958,7 @@ function add_rows(){
     projectData.push(newRow);
   }
   addLog('adding_rows', {start_id:id+1, stop_id:id+rows_amount});
-  // console.log(gridOptions);
+
   // const res = gridOptions.api.applyTransaction({add: [row_template]});
   // gridOptions.api.setRowData(gridOptions.api.rowData);
 }
@@ -1057,7 +1056,7 @@ document.addEventListener("paste", function (e) {
     let cells_edited = {};
 
     ids = getIds(projectData, projectData[row_id]['id']).splice(0, pasted_array.length);
-        console.log(ids);
+        
 
     ids.forEach(function(id, index){
       let log_name = `${column_class}-${id}`;
