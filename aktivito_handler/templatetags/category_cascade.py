@@ -1,5 +1,5 @@
 from django import template
-from aktivito_handler.models import Category, GoodsType, GoodsSubType
+from aktivito_handler.models import (Category, GoodsType, GoodsSubType, ContactMethod, ListingFee, AdStatus, AdType, Condition, PriceType)
 import json
 
 register = template.Library()
@@ -18,3 +18,46 @@ def get_category_cascade():
 
     print(cascade_dict)
     return json.dumps(cascade_dict, ensure_ascii=False)
+
+
+@register.simple_tag
+def get_contact_methods():
+    output = []
+    for method in ContactMethod.objects.all():
+        output.append(method.method)
+    return json.dumps(output, ensure_ascii=False)
+
+@register.simple_tag
+def get_listing_fees():
+    output = []
+    for fee in ListingFee.objects.all():
+        output.append(fee.fee)
+    return json.dumps(output, ensure_ascii=False)
+
+@register.simple_tag
+def get_ad_statuses():
+    output = []
+    for status in AdStatus.objects.all():
+        output.append(status.status)
+    return json.dumps(output, ensure_ascii=False)
+
+@register.simple_tag
+def get_ad_types():
+    output = []
+    for type in AdType.objects.all():
+        output.append(type.type)
+    return json.dumps(output, ensure_ascii=False)
+
+@register.simple_tag
+def get_conditions():
+    output = []
+    for condition in Condition.objects.all():
+        output.append(condition.condition)
+    return json.dumps(output, ensure_ascii=False)
+
+@register.simple_tag
+def get_conditions():
+    output = []
+    for type in PriceType.objects.all():
+        output.append(type.type)
+    return json.dumps(output, ensure_ascii=False)

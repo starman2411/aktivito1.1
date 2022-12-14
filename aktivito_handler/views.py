@@ -144,10 +144,45 @@ def editing_view_2(request, project_name):
         excel_data_df = pd.read_excel(project_path, sheet_name='Sheet1').fillna(value='')
         json_table = excel_data_df.to_json(orient='records', force_ascii=False)
         rows = json.loads(json_table)
+        for row in rows:
+            row['Images'] = make_dict_images(row['Images'])
+            row['IdRow'] = row.pop('Id')
+        rows = json.dumps(excel_to_project(rows), ensure_ascii=False)
+
         context.update([('rows', rows)])
     else:
-        return render(request, 'project_handler2.html', context=context)
-    return render(request, 'project_handler2.html', context=context)
+        return render(request, 'project_handler3.html', context=context)
+    return render(request, 'project_handler3.html', context=context)
+
+def excel_to_project(rows):
+    index = 0
+    for row in rows:
+
+        for key in row.keys():
+            row[key] = {'value': row[key], 'color': 'white'}
+        row['id'] = str(index)
+        index += 1
+    return rows
+
+def make_images_row(input_string):
+    if input_string:
+        array = json.loads(input_string)
+    else:
+        return ''
+    images_string = ''
+    first_trigger = True
+    for key in array.keys():
+        if first_trigger:
+            images_string += array[key]
+            first_trigger = False
+        else:
+            images_string += ' | ' + array[key]
+    return images_string
+
+def make_dict_images(input_string):
+    images = dict(zip(['1', '2', '3','4','5','6','7','8','9','10'], input_string.split(' | ')))
+    return json.dumps(images, ensure_ascii=False)
+
 
 def _new_filename(filename):
     path = Path(filename)
@@ -207,8 +242,17 @@ def load_files_2(request):
 @ensure_csrf_cookie
 def load_table(request):
     json_table = json.loads(request.POST['json_table'])
+    json_table_for_pd = json_table
+    for row in json_table_for_pd:
+        del row['id']
+        for key in row.keys():
+            row[key] = row[key]['value']
+            # if key == 'IdRow':
+            #     row['Id'] = row.pop('IdRow')
+        row['Images'] = make_images_row(row['Images'])
 
-    df = pd.read_json(request.POST['json_table'], orient='columns')
+    df = pd.DataFrame(json_table_for_pd)
+    df = df.rename(columns={'IdRow': 'Id'})
 
     project_name = request.POST['project_name']
 

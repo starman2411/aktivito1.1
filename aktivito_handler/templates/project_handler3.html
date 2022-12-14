@@ -1,0 +1,372 @@
+{% load static %}
+{% load category_cascade%}
+<html lang="en">
+	<head>
+		<title>JavaScript example</title>
+		<meta charSet="UTF-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script><script src="{% static 'airdatepicker/air-datepicker.js' %}"></script>
+
+		<link rel="stylesheet" href="{% static 'airdatepicker/air-datepicker.css' %}">
+		<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="{% static 'airdatepicker/air-datepicker.js' %}"></script>
+    	<script src="{% static 'scripts3.js' %}"></script>
+		<style media="only screen">
+            html, body {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                box-sizing: border-box;
+                -webkit-overflow-scrolling: touch;
+            }
+            html {
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 0;
+                overflow: auto;
+            }
+            body {
+                padding: 1rem;
+                overflow: auto;
+            }
+       .context-menu {
+       /* настройки шрифта */
+       font-family: sans-serif;
+       /* устанавливаем абсолютное позиционирование */
+  position: absolute;
+  /* не показываем меню с самого начала */
+  display: none;
+  /* цвет фона и настройки рамки вокруг меню */
+  background-color: #fff;
+  border: 1px solid #333;
+  padding: 5px;
+
+  /* Добавим тени */
+  -moz-box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+  box-shadow: 5px 2px 10px rgba(0,0,0,0.5);
+}
+.context-menu {z-index:3;}
+/* общий стиль для списка */
+.context-menu ul { list-style: none; margin: 0; padding: 0; }
+
+/* стиль отдельных элементов */
+.context-menu ul li { margin: 0; padding: 0; background-color: #fff; display: block; }
+
+/* стиль ссылок в меню */
+.context-menu ul li span { color: #333; text-decoration: none; font-size: 12px; display: block; padding: 5px; }
+
+/* меняем фон в пункте меню при наведении мыши */
+.context-menu ul li span:hover { background-color: #eee; }
+
+       .textarea-field, .input-field, .select-field {
+            height:65px;
+       }
+.ag-header-cell-label {
+   justify-content: center;
+}
+
+.ag-row .ag-cell {
+
+
+  text-align: center;
+}
+
+        </style>
+	</head>
+
+
+<body>
+
+{% csrf_token %}
+
+<div class="d-flex flex-row  justify-content-between align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow flex-nowrap" style="max-height: 7vh;">
+      <h1 class=" font-weight-normal" style="color: #04E061;">Активито</h1>
+      <nav class="my-2 my-md-0 mr-md-3">
+          <a class="btn btn-outline-success"  href="{% url 'projects' user.username%}">К проектам</a>
+          <a class="btn btn-outline-success" onclick="upload_table()" href="#">Сохранить</a>
+          <button class="btn btn-outline-success" onclick="print_table()" >print</button>
+      </nav>
+</div>
+
+<div class="modal fade" id="LoadFilesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <span>Идёт загрузка...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="LoadTableModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <span>Сохранение...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="LoadTableSuccessModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <span>Сохранено успешно!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ErrorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <span>Ошибка!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="container d-flex flex-column justify-content-center table-container" style="min-width:100%; height: 85vh; padding: 0 20px;">
+    <div style="width: 95vw">
+        <div class="d-flex align-items-center mb-2">
+            <label for="project-name" style="width:160px;" >Название проекта:</label>
+            <input type="text" style="width:300px; height:30px;" id="project-name" class="form-control" value="{{project_name}}">
+        </div>
+        <div class="d-flex align-items-center mb-2">
+                <span style="width:120px;">Часовой пояс: </span>
+                <select id="timezone-selector" class="form-select form-select-sm" style="width:200px">
+                    <option value="+02:00">UTC+2 (Калининград)</option>
+                    <option value="+03:00" selected>UTC+3 (Москва)</option>
+                    <option value="+04:00" >UTC+4 (Самара)</option>
+                    <option value="+05:00" >UTC+5 (Екатеринбург)</option>
+                    <option value="+06:00" >UTC+6 (Омск)</option>
+                    <option value="+07:00" >UTC+7 (Красноярск)</option>
+                    <option value="+08:00" >UTC+8 (Иркутск)</option>
+                    <option value="+09:00" >UTC+9 (Якутия)</option>
+                    <option value="+10:00" >UTC+10 (Владивосток)</option>
+                    <option value="+11:00" >UTC+11 (Магадан)</option>
+                    <option value="+12:00" >UTC+12 (Камчатка)</option>
+                </select>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+              <span style="width:180px; ">Пресет уникализации: </span>
+                  <select id="preset-selector" class="form-select form-select-sm" style="width:200px">
+                  {% for preset in presets%}
+                  <option value="{{preset.preset_name}}">{{preset.preset_name}}</option>
+                  {% endfor %}
+              </select>
+        </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-0">
+            <div class="d-flex flex-row " style="margin-bottom: 8px">
+                <label for="hide-end-time-box" style="width:190px;">Убрать столбец DateEnd</label>
+                <input type="checkbox" id="hide-end-time-box" onchange='hide_end_time()'>
+                <label for="hide-type-box" style="width:210px; margin-left:40px;">Убрать столбец GoodsType</label>
+                <input type="checkbox" id="hide-type-box" onchange='hide_type()'>
+                <label for="hide-subtype-box" style="width:235px; margin-left:40px; ">Убрать столбец GoodsSubType</label>
+                <input type="checkbox" style="margin-right:40px" id="hide-subtype-box" onchange='hide_subtype()'>
+            </div>
+            <div class="d-flex flex-row" >
+                <label for="delete-amount-from" style="width:128px; margin:0 0px" >Удалить строки с</label>
+                <input type="text" style="width:70px; height:30px;" id="delete-amount-from" class="form-control" value= "">
+                <label for="delete-amount-to" style=" margin:0 8px;" >по</label>
+                <input type="text" style="width:70px; height:30px;" id="delete-amount-to" class="form-control" value="">
+                <button class="btn btn-sm  btn-outline-danger" style="margin-left:12px; margin-right:2px;" onclick="delete_rows()">Удалить</button>
+            </div>
+        </div>
+        <div class="mb-2">
+             <span style="cursor: pointer; color:red;" class="text-decoration-none" id="undo-button" onClick="undo()" >Отменить последнее действие
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                    </svg>
+            </span>
+    </div>
+</div>
+
+
+
+		<div id="myGrid" style="height: 100%; width: 100%" class="ag-theme-alpine">
+		</div>
+
+
+
+
+    <div class="d-flex align-items-center mt-2 ">
+        <span style="">Добавить строки:</span>
+        <input type="text" id="new-rows-amount" class="form-control-sm" style="margin-left:10px;" value="1">
+        <span style="cursor: pointer;margin-left:10px;" class="text-decoration-none" id="add-row" onClick="add_rows()" >
+
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#04E061" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+            </svg>
+         </span>
+
+    </div>
+		<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@28.2.1/dist/ag-grid-community.min.js">
+		</script>
+		<script>
+
+		projectData = JSON.parse("{{rows|escapejs}}");
+		console.log(projectData);
+		let selects_library= {};
+		{% get_category_cascade as category_cascade%}
+		{% get_contact_methods as contact_methods_list%}
+		{% get_listing_fees as listing_fees%}
+		{% get_ad_statuses as ad_statuses%}
+		{% get_ad_types as ad_types%}
+		{% get_conditions as conditions%}
+		const category_cascade = JSON.parse("{{category_cascade|escapejs }}");
+		selects_library['ContactMethod'] = JSON.parse("{{contact_methods_list|escapejs }}");
+		selects_library['ListingFee'] = JSON.parse("{{listing_fees|escapejs }}");
+		selects_library['AdStatus'] = JSON.parse("{{ad_statuses|escapejs }}");
+		selects_library['AdType'] = JSON.parse("{{ad_types|escapejs }}");
+		selects_library['Condition'] = JSON.parse("{{conditions|escapejs }}");
+		</script>
+
+    <script>
+    let load_files_modal = new bootstrap.Modal(document.getElementById("LoadFilesModal"), {});
+    let load_table_modal = new bootstrap.Modal(document.getElementById("LoadTableModal"), {});
+    let load_table_success_modal = new bootstrap.Modal(document.getElementById("LoadTableSuccessModal"), {});
+    let error_modal = new bootstrap.Modal(document.getElementById("ErrorModal"), {});
+
+
+     let csrf = $("input[name=csrfmiddlewaretoken]").val();
+
+function  upload_files(elem, file_id, row_id) {
+
+    let cells_edited = {}
+    let formData = new FormData();
+    let row = elem.currentTarget.parentNode.parentNode.parentNode;
+<!--    let rows = document.querySelectorAll('tbody > tr');-->
+<!--    let rows_amount = rows.length;-->
+
+            let thisRow = projectData.find(o => o.id === String(row_id));
+            let rowIndex = projectData.indexOf(thisRow);
+
+
+
+    let files_input = row.getElementsByClassName(`load-files-input-${file_id}`)[0];
+    let unique_checkbox = row.getElementsByClassName(`load-files-unique-checkbox-${file_id}`)[0];
+    let multi_unique_checkbox = row.getElementsByClassName(`load-files-multi-unique-checkbox-${file_id}`)[0];
+
+    files = files_input.files;
+
+    if (files.length){
+        for (k=0;k<files.length;k++) {
+            formData.append('files',files[k])
+        }
+        formData.append("csrfmiddlewaretoken", csrf);
+        formData.append("project_name", String(document.getElementById('project-name').value));
+
+        formData.append("make_unique", Number(unique_checkbox.checked));
+
+        formData.append("propagate", [Number(multi_unique_checkbox.checked), projectData.length-Number(rowIndex)+1]);
+
+        let preset_selector = document.getElementById('preset-selector');
+        formData.append("preset", preset_selector.options[preset_selector.selectedIndex].value);
+        $.ajax({
+        url: "{%url 'load_files_2'%}",
+        dataType: 'json', // what to expect back from server
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        data: formData,
+        beforeSend: function(){load_files_modal.show();},
+        error: function(){
+             setTimeout(() => load_files_modal.hide(), 500);
+             setTimeout(() => error_modal.show(), 700);
+             },
+
+
+        success: function(response) {
+            if (response) {
+                let urls = response['urls'];
+                if (urls){
+
+                    ids = getIds(projectData, row_id);
+                    for (let k = 0; k < urls.length; k++){
+                        let row = gridOptions.api.getRowNode(ids[k]);
+                        if (row){
+
+
+                            let previous = row.data['Images']['value'];
+                            let urls_obj = {};
+
+                            if (previous) {
+                                urls_obj = JSON.parse(previous);
+                            }
+
+                            urls_obj[file_id] = urls[k];
+
+                            newValue = JSON.stringify(urls_obj);
+
+<!--                            let value = images_textarea.value-->
+<!--                            let new_value = '';-->
+
+<!--                            for (let key in urls_obj) {-->
+<!--                                if (!(new_value)) {-->
+<!--                                    new_value = urls_obj[key];-->
+<!--                                }-->
+<!--                                else {-->
+<!--                                    new_value = new_value + ' | ' + urls_obj[key];-->
+<!--                                }-->
+<!--                            }-->
+<!--                            cells_edited[`Images-wrapper-${row_id + k}`] = {'previous': images_textarea.value, 'new': new_value};-->
+<!--                            images_textarea.value = new_value;-->
+                            row.setDataValue('Images', {'value':newValue,'color': 'white'});
+                        }
+                    }
+                }
+                addLog('load_images', cells_edited);
+                setTimeout(() => load_files_modal.hide(), 500);
+            }
+        }
+        })
+    }
+}
+
+function  upload_table() {
+
+    project_name = String(document.getElementById('project-name').value);
+    if (!(project_name)) {
+        alert('Введите название проекта!');
+        return(false);
+    }
+    let formData = new FormData();
+
+    formData.append('json_table',JSON.stringify(projectData));
+    formData.append('project_name', document.getElementById('project-name').value);
+    formData.append("csrfmiddlewaretoken", csrf);
+    $.ajax({
+    url: {% url 'load_table'%},
+    dataType: 'json', // what to expect back from server
+    cache: false,
+    contentType: false,
+    processData: false,
+    type: 'post',
+    data: formData,
+    error: function(){
+         setTimeout(() => load_table_modal.hide(), 500);
+         setTimeout(() => error_modal.show(), 700);
+         },
+    beforeSend: function(){load_table_modal.show();},
+    success: function(response) {
+         setTimeout(() => load_table_modal.hide(), 500);
+         setTimeout(() => load_table_success_modal.show(), 700);
+    }
+    })
+}
+
+
+    </script>
+
+
+	</body>
+</html>
