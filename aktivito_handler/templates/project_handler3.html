@@ -73,7 +73,9 @@
 
   text-align: center;
 }
-
+.file-button{
+        background-color:#04E061;
+       }
         </style>
 	</head>
 
@@ -321,7 +323,9 @@ function  upload_files(elem, file_id, row_id) {
 <!--                            }-->
 <!--                            cells_edited[`Images-wrapper-${row_id + k}`] = {'previous': images_textarea.value, 'new': new_value};-->
 <!--                            images_textarea.value = new_value;-->
+                            cells_edited[`Images-${ids[k]}`] = {'previous': row.data['Images']};
                             row.setDataValue('Images', {'value':newValue,'color': 'white'});
+
                         }
                     }
                 }
