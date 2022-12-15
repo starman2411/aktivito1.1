@@ -180,7 +180,13 @@ def make_images_row(input_string):
     return images_string
 
 def make_dict_images(input_string):
-    images = dict(zip(['1', '2', '3','4','5','6','7','8','9','10'], input_string.split(' | ')))
+
+
+    images_array = input_string.split(' | ')
+    images = dict(zip(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], images_array))
+
+
+
     return json.dumps(images, ensure_ascii=False)
 
 

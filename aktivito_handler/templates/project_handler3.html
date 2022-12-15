@@ -2,7 +2,7 @@
 {% load category_cascade%}
 <html lang="en">
 	<head>
-		    <title>Activito</title>
+	<title>Activito</title>
     <link rel="icon" href="{% static 'activito.ico' %}">
 		<meta charSet="UTF-8">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
@@ -77,6 +77,9 @@
 .file-button{
         background-color:#04E061;
        }
+
+
+
         </style>
 	</head>
 
@@ -135,6 +138,39 @@
 </div>
 
 
+<div class="modal fade" id="ReplaceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body d-flex flex-column">
+          <h2 style="text-align: center; margin-bottom: 20px">Найти и заменить</h2>
+          <span><strong>Поиск по столбцам:</strong></span>
+          <div style="display:inline-block; margin-bottom: 10px;">
+          <label for="CompanyName-box">CompanyName <input type="checkbox" style="margin-right:5px" id="CompanyName-box" ></label>
+
+          <label for="ManagerName-box">ManagerName <input type="checkbox" style="margin-right:5px" id="ManagerName-box" ></label>
+
+          <label for="ContactPhone-box">ContactPhone <input type="checkbox" style="margin-right:5px" id="ContactPhone-box" ></label>
+
+          <label for="VideoUrl-box">VideoUrl <input type="checkbox" style="margin-right:5px" id="VideoUrl-box" ></label>
+
+          <label for="Address-box">Address <input type="checkbox" style="margin-right:5px" id="Address-box" ></label>
+
+          <label for="Title-box">Title <input type="checkbox" style="margin-right:5px" id="Title-box" ></label>
+
+          <label for="Description-box">Description <input type="checkbox" style="margin-right:5px" id="Description-box" ></label>
+
+          <label for="Price-box">Price <input type="checkbox" style="margin-right:5px" id="Price-box" ></label>
+          </div>
+          <div class="d-flex flex-column" >
+              <span>Найти:</span><input style="margin-top:5px" class="form-control" id="find-text-input">
+              <span>Заменить на:</span><input style="margin-top:5px" class="form-control" id="replace-text-input">
+              <button class="btn btn-success" onclick="find_and_replace()" style="margin-top:10px">Заменить всё</button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container d-flex flex-column justify-content-center table-container" style="min-width:100%; height: 85vh; padding: 0 20px;">
     <div style="width: 95vw">
         <div class="d-flex align-items-center mb-2">
@@ -164,6 +200,8 @@
                   <option value="{{preset.preset_name}}">{{preset.preset_name}}</option>
                   {% endfor %}
               </select>
+            <label style="margin-left:40px; margin-right:20px">Число уникализаций: </label> <input style="width:70px; height:30px;" class="form-control" id="unique-amount" type="text" disabled>
+            <label for="unique-amount-box" style="margin-left:20px; margin-right:5px">Max</label><input type="checkbox" id="unique-amount-box" onChange="change_input_state(this)" checked>
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-0">
             <div class="d-flex flex-row " style="margin-bottom: 8px">
@@ -182,13 +220,18 @@
                 <button class="btn btn-sm  btn-outline-danger" style="margin-left:12px; margin-right:2px;" onclick="delete_rows()">Удалить</button>
             </div>
         </div>
-        <div class="mb-2">
-             <span style="cursor: pointer; color:red;" class="text-decoration-none" id="undo-button" onClick="undo()" >Отменить последнее действие
+        <div class="mb-2 d-flex ">
+             <span style="cursor: pointer; color:red; margin-right:20px" class="text-decoration-none" id="undo-button" onClick="undo()" >Отменить последнее действие
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
       <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
       <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
                     </svg>
             </span>
+            <span style="cursor: pointer;margin-right:3px; color:#198754;" onClick="find_replace_modal.show()">Найти и заменить
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+</svg></span>
+
     </div>
 </div>
 
@@ -205,7 +248,7 @@
         <input type="text" id="new-rows-amount" class="form-control-sm" style="margin-left:10px;" value="1">
         <span style="cursor: pointer;margin-left:10px;" class="text-decoration-none" id="add-row" onClick="add_rows()" >
 
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#04E061" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#198754" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
                 <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
             </svg>
          </span>
@@ -238,6 +281,8 @@
     let load_table_modal = new bootstrap.Modal(document.getElementById("LoadTableModal"), {});
     let load_table_success_modal = new bootstrap.Modal(document.getElementById("LoadTableSuccessModal"), {});
     let error_modal = new bootstrap.Modal(document.getElementById("ErrorModal"), {});
+    let find_replace_modal = new bootstrap.Modal(document.getElementById("ReplaceModal"), {});
+
 
 
      let csrf = $("input[name=csrfmiddlewaretoken]").val();
@@ -247,9 +292,6 @@ function  upload_files(elem, file_id, row_id) {
     let cells_edited = {}
     let formData = new FormData();
     let row = elem.currentTarget.parentNode.parentNode.parentNode;
-<!--    let rows = document.querySelectorAll('tbody > tr');-->
-<!--    let rows_amount = rows.length;-->
-
             let thisRow = projectData.find(o => o.id === String(row_id));
             let rowIndex = projectData.indexOf(thisRow);
 
@@ -260,6 +302,11 @@ function  upload_files(elem, file_id, row_id) {
     let multi_unique_checkbox = row.getElementsByClassName(`load-files-multi-unique-checkbox-${file_id}`)[0];
 
     files = files_input.files;
+    let unique_amount = projectData.length-Number(rowIndex)+1;
+    if (!Number(document.getElementById('unique-amount-box').checked)){
+        unique_amount = Number(document.getElementById('unique-amount').value);
+    }
+
 
     if (files.length){
         for (k=0;k<files.length;k++) {
@@ -270,7 +317,7 @@ function  upload_files(elem, file_id, row_id) {
 
         formData.append("make_unique", Number(unique_checkbox.checked));
 
-        formData.append("propagate", [Number(multi_unique_checkbox.checked), projectData.length-Number(rowIndex)+1]);
+        formData.append("propagate", [Number(multi_unique_checkbox.checked), unique_amount]);
 
         let preset_selector = document.getElementById('preset-selector');
         formData.append("preset", preset_selector.options[preset_selector.selectedIndex].value);
@@ -287,46 +334,23 @@ function  upload_files(elem, file_id, row_id) {
              setTimeout(() => load_files_modal.hide(), 500);
              setTimeout(() => error_modal.show(), 700);
              },
-
-
         success: function(response) {
             if (response) {
                 let urls = response['urls'];
                 if (urls){
-
                     ids = getIds(projectData, row_id);
                     for (let k = 0; k < urls.length; k++){
                         let row = gridOptions.api.getRowNode(ids[k]);
                         if (row){
-
-
                             let previous = row.data['Images']['value'];
                             let urls_obj = {};
-
                             if (previous) {
                                 urls_obj = JSON.parse(previous);
                             }
-
                             urls_obj[file_id] = urls[k];
-
                             newValue = JSON.stringify(urls_obj);
-
-<!--                            let value = images_textarea.value-->
-<!--                            let new_value = '';-->
-
-<!--                            for (let key in urls_obj) {-->
-<!--                                if (!(new_value)) {-->
-<!--                                    new_value = urls_obj[key];-->
-<!--                                }-->
-<!--                                else {-->
-<!--                                    new_value = new_value + ' | ' + urls_obj[key];-->
-<!--                                }-->
-<!--                            }-->
-<!--                            cells_edited[`Images-wrapper-${row_id + k}`] = {'previous': images_textarea.value, 'new': new_value};-->
-<!--                            images_textarea.value = new_value;-->
                             cells_edited[`Images-${ids[k]}`] = {'previous': row.data['Images']};
                             row.setDataValue('Images', {'value':newValue,'color': 'white'});
-
                         }
                     }
                 }

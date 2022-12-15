@@ -27,6 +27,56 @@ function getEmptyRow(id, IdRow){
   };
 }
 
+function find_and_replace(){
+      let cells_edited = {};
+      let columnsNames = [
+        'CompanyName',
+        'ManagerName',
+        'ContactPhone',
+        'VideoUrl',
+        'Address',
+        'Title',
+        'Description',
+        'Price',
+      ];
+      let workColumns = [];
+      columnsNames.forEach(function(name, index){
+        let box = document.getElementById(name + '-box');
+        if (Number(box.checked)){
+          workColumns.push(name);
+        }
+      })
+    const oldValue = document.getElementById('find-text-input').value;
+    const newValue = document.getElementById('replace-text-input').value;
+    if (oldValue && newValue && workColumns.length){
+      let data = JSON.parse(JSON.stringify(projectData));
+      data.forEach(function(row, index){
+       
+          workColumns.forEach(function(columnName, colId){
+            let value = row[columnName]['value']
+
+            if (value == oldValue){
+              
+                let thisRow = gridOptions.api.getRowNode(projectData[index]['id']);        
+          
+                let previous = thisRow.data[columnName];
+                let logKey = `${columnName}-${String(projectData[index]['id'])}`;
+                cells_edited[logKey] = {'previous': previous};
+                // projectData[index][columnName]['value'] = newValue;
+                thisRow.setDataValue(columnName, {'value':newValue,'color': previous['color']});
+
+                  }
+        })
+      })
+      addLog('find_replace', cells_edited); 
+      find_replace_modal.hide();
+    }
+
+}
+
+
+const colors = {'blue':'#A5DEE5', 'green':'#E0F9B5', 'yellow':'#FEFDCA'};
+
 // let projectData = [];
 // for(let k = 0; k <= 10; k++){
 //   projectData.push(getEmptyRow(k, k+1));
@@ -70,12 +120,12 @@ class DateBeginInputComp {
 
         this.eGui.innerHTML = `
           <div class="${columnName}-wrapper" >
-              <input type="text" class="form-control input-field" value="${value}">
+              <input type="text" class="form-control input-field" value="${value}" style="background-color:${color}">
           </div>
         `;
         let next_date = new Date(value);
         next_date.setDate(next_date.getDate() + 30);
-        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': row.data['GoodsType']['color']});
+        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
         this.dateInput = this.eGui.querySelector('input');
         this.datePicker = new AirDatepicker(this.dateInput, {
           timepicker: true,
@@ -87,14 +137,15 @@ class DateBeginInputComp {
           onSelect({date, formattedDate, datepicker}){
             let next_date = new Date(date);
             next_date.setDate(next_date.getDate() + 30);
-            row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': row.data['GoodsType']['color']});
+            row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
             manual_input(datepicker.$el,id,columnName);
 
           },
         });
 
         this.click_event_listener = (e) => {
-            if ((e.which != 3)) {
+
+            if ((e.which != 3) && !(e.shiftKey)) {
             this.datePicker.show();
           }
         };
@@ -118,12 +169,12 @@ class DateBeginInputComp {
 
         this.eGui.innerHTML = `
           <div class="${columnName}-wrapper" >
-              <input type="text" class="form-control input-field" value="${value}">
+              <input type="text" class="form-control input-field" value="${value}" style="background-color:${color}">
           </div>
         `;
         let next_date = new Date(value);
         next_date.setDate(next_date.getDate() + 30);
-        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': row.data['GoodsType']['color']});
+        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
 
         this.dateInput = this.eGui.querySelector('input');
         this.datePicker = new AirDatepicker(this.dateInput, {
@@ -141,7 +192,7 @@ class DateBeginInputComp {
             // let dataRow = projectData.find(o => o.id === String(id));
             // let index = projectData.indexOf(dataRow);
 
-            row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': row.data['GoodsType']['color']});
+            row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
             // projectData[index]['DateEnd']['value'] = get_string_date(next_date);
             manual_input(datepicker.$el,id,columnName);
           },
@@ -214,24 +265,26 @@ class TextAreaComp {
 
         if (columnName == 'Images'){
           let images = {};
+
           if (value){
+
             images = JSON.parse(value);
           }
           let stringValue = '';
           let firstTrigger = true;
           for (let key in images) {
-            if (firstTrigger) {
+            if ((firstTrigger)&&(images[key])) {
                 stringValue = images[key];
                 firstTrigger = false;
             }
-            else {
+            else if (images[key]){
                 stringValue = stringValue + ' | ' + images[key];
             }
           }
                 this.eGui.innerHTML = `
           <div class="${columnName}">
             <div class="${columnName}-wrapper">
-              <textarea class="form-control textarea-field" data-previous="">${stringValue}</textarea>
+              <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${stringValue}</textarea>
             </div>
           </div>
         `;
@@ -240,7 +293,7 @@ class TextAreaComp {
                   this.eGui.innerHTML = `
           <div class="${columnName}">
             <div class="${columnName}-wrapper">
-              <textarea class="form-control textarea-field" data-previous="">${value}</textarea>
+              <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${value}</textarea>
             </div>
           </div>
         `;
@@ -269,26 +322,28 @@ class TextAreaComp {
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
 
-        if (columnName == 'Images'){
+              if (columnName == 'Images'){
           let images = {};
+
           if (value){
+
             images = JSON.parse(value);
           }
           let stringValue = '';
           let firstTrigger = true;
           for (let key in images) {
-            if (firstTrigger) {
+            if ((firstTrigger)&&(images[key])) {
                 stringValue = images[key];
                 firstTrigger = false;
             }
-            else {
+            else if (images[key]){
                 stringValue = stringValue + ' | ' + images[key];
             }
           }
                 this.eGui.innerHTML = `
           <div class="${columnName}">
             <div class="${columnName}-wrapper">
-              <textarea class="form-control textarea-field" data-previous="">${stringValue}</textarea>
+              <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${stringValue}</textarea>
             </div>
           </div>
         `;
@@ -297,7 +352,7 @@ class TextAreaComp {
                   this.eGui.innerHTML = `
           <div class="${columnName}">
             <div class="${columnName}-wrapper">
-              <textarea class="form-control textarea-field" data-previous="">${value}</textarea>
+              <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${value}</textarea>
             </div>
           </div>
         `;
@@ -356,7 +411,7 @@ class SelectComp {
         this.eGui = document.createElement('div');
         const first_part = `
           <div class="${columnName}-wrapper">
-              <select class="form-select select-field">
+              <select class="form-select select-field" style="background-color: ${color};">
                   <option selected value=""></option>
         `;
         const third_part = `
@@ -417,7 +472,7 @@ class SelectComp {
 
         const first_part = `
           <div class="${columnName}-wrapper">
-              <select class="form-select  select-field">
+              <select class="form-select  select-field" style="background-color: ${color};">
                   <option selected value=""></option>
         `;
         const third_part = `
@@ -547,7 +602,82 @@ class FileInputComp {
     }
 }
 
+function contains(target, lookingFor) {
+  return target && target.indexOf(lookingFor) >= 0;
+}
 
+
+
+
+
+
+
+
+
+class PersonFilter {
+  init(params) {
+    this.params = params;
+    this.filterText = null;
+    this.columnName = params['columnName'];
+    this.setupGui(params);
+  }
+
+  // not called by AG Grid, just for us to help setup
+  setupGui(params) {
+    this.gui = document.createElement('div');
+    this.gui.innerHTML = `<div style="padding: 4px; width: 200px;">
+                <div style="font-weight: bold;">Поиск по ${this.columnName}</div>
+                <div>
+                    <input style="margin: 4px 0 4px 0;" type="text" id="filterText" placeholder="${this.columnName}...">
+                    <button class="btn btn-success btn-sm" id="cleanButton">Сбросить</button>
+                </div>
+            </div>
+        `;
+
+    const listener = (event) => {
+      this.filterText = event.target.value;
+      params.filterChangedCallback();
+    };
+    const cleaner = (event) => {
+      this.filterText = null;
+      this.eFilterText.value = '';
+      params.filterChangedCallback();
+    };
+    this.button = this.gui.querySelector('#cleanButton');
+    this.eFilterText = this.gui.querySelector('#filterText');
+    this.eFilterText.addEventListener('changed', listener);
+    this.eFilterText.addEventListener('paste', listener);
+    this.eFilterText.addEventListener('input', listener);
+    this.button.addEventListener('click', cleaner);
+  }
+
+  getGui() {
+    return this.gui;
+  }
+
+  doesFilterPass(params) {
+    const filterTextLowerCase = this.filterText.toLowerCase();
+    const valueLowerCase = params.data[this.columnName]['value'].toString().toLowerCase();
+    return valueLowerCase.indexOf(filterTextLowerCase) >= 0;
+                    
+  }
+
+  isFilterActive() {
+    return this.filterText != null && this.filterText !== '';
+  }
+
+  getModel() {
+    if (!this.isFilterActive()) {
+      return null;
+    }
+
+    return { value: this.filterText };
+  }
+
+  setModel(model) {
+    this.eFilterText.value = model == null ? null : model.value;
+  }
+}
 
 let gridOptions = {
   columnDefs: [
@@ -568,8 +698,8 @@ let gridOptions = {
     {field: "AdType", width:300, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'AdType', cellRenderer: SelectComp, cellRendererParams: { columnName: "AdType" }},
     {field: "GoodsSubType", width:300, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'GoodsSubType', cellRenderer: SelectComp, cellRendererParams: { columnName: "GoodsSubType" }, hide:false},
     {field: "Condition", width:160, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Condition', cellRenderer: SelectComp, cellRendererParams: { columnName: "Condition" }},
-    {field: "Title", width:170, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Title', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Title" }},
-    {field: "Description", width:210, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Description', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Description" }},
+    {field: "Title", filter: PersonFilter,filterParams: {'columnName':'Title'}, width:170, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Title', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Title" }},
+    {field: "Description",filter: PersonFilter,filterParams: {'columnName':'Description'}, width:210, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Description', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Description" }},
     {field: "Price", width:130, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Price', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Price" }},
     {field: "PriceType", width:150, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'PriceType', cellRenderer: SelectComp, cellRendererParams: { columnName: "PriceType" }},
 
@@ -586,9 +716,12 @@ let gridOptions = {
 
     {field: "Images", width:830, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Images', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Images" }},
   ],
+
   rowHeight: 68,
   getRowId: params => params.data.id,
-  suppressCellSelection: true,
+  // suppressCellSelection: true,
+  rowSelection: 'multiple',
+  
 
 };
 
@@ -656,19 +789,31 @@ function delete_rows(){
     addLog('delete_row', rowsData);
 }
 
+function delete_rows_on_select(){
+
+  let selectedRows = gridOptions.api.getSelectedNodes();
+  let rowsData = {}
+  let rowsToDelete = [];
+  selectedRows.forEach(function(row, index){
+    rowsToDelete.push(row.data);
+    rowsData[row.data['id']] = {'previous':row.data};
+
+    let thisRow = projectData.find(o => o.id === String(row.data['id']));
+    let deleteIndex = projectData.indexOf(thisRow);
+    projectData.splice(deleteIndex, 1);
+  })
+  gridOptions.api.applyTransaction({remove: rowsToDelete});
+  
+  // gridOptions.api.deselectAll();  
+  addLog('delete_row', rowsData);
+}
+
 
 function manual_input(elem, id, className){
   let row = gridOptions.api.getRowNode(id); 
   let previous = row.data[className];
   const logKey = `${className}-${String(id)}`;
-  // let data = row.data;
-  // data[className] = {'value':elem.value,'color': 'pink'};
-
-  row.setDataValue(className, {'value':elem.value,'color': 'pink'});
-  // gridOptions.api.applyTransaction({update: [row]});
-  // row.setDataValue('col 2','2');
-    // let row_id = elem.parentNode.parentNode.parentNode.id.split('-')[1];
-    // let cells = {[elem.parentNode.className + '-' + row_id]: {'previous': elem.dataset.previous, 'new': elem.value}};
+  row.setDataValue(className, {'value':elem.value,'color': previous['color']});
   addLog('manual_editing', {[logKey]: {'previous': previous}})
 }
 
@@ -735,6 +880,16 @@ function delete_to_end(current_id, className) {
 }
 
 function raise_context(event, id, columnName) {
+  let left = Number(event.pageX);
+  let top = Number(event.pageY);
+  if (window.innerHeight - event.pageY < 280){
+    top = top - 264;
+  }
+  if (window.innerWidth - event.pageX < 215){
+    left = left - 207;
+  }
+  let row = gridOptions.api.getRowNode(id); 
+  row.setSelected(true);
     const row_id = id;
     const class_name = columnName;
     document.oncontextmenu = function() {return false;};
@@ -744,22 +899,64 @@ function raise_context(event, id, columnName) {
               class: 'context-menu'
             })
             .css({
-              left: event.pageX+'px',
-              top: event.pageY+'px'
+              left: String(left) + 'px',
+              top: String(top) + 'px'
             })
+            
             .appendTo('body')
             .append(
-                $('<ul/>').append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_to_end(${row_id}, '${class_name}')">Продлить до конца</span></li>`)
-                .append(`<li><span style="cursor: pointer;" id="delete-to-end" onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
-                .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_row_to_end(${row_id})">Продлить всю строку до конца</span></li>`)
+                $('<ul/>').append(`<li><span style="cursor: pointer;"  onClick="continue_to_end(${row_id}, '${class_name}')">Продлить до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="continue_row_to_end(${row_id})">Продлить строку до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="extend_on_select(${row_id}, '${class_name}')">Продлить ячейку на выделенное</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="extend_row_on_select(${row_id}, '${class_name}')">Продлить строку на выделенное</span></li>`)
+                .append(`<li style="display:flex;flex-direction:row;align-items:center;">
+                          <span style="height:28px; margin-right:7px">Цвет:</span>
+                          <div style="border-radius: 15px;cursor: pointer; background-color:${colors['blue']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'blue')"></div>
+                          <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['green']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'green')"></div>
+                          <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['yellow']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'yellow')"></div>                         
+                        </li>`
+                        )
+                .append(`<li><span style="cursor: pointer;"  onClick="continue_color_to_end(${row_id}, '${class_name}')">Продлить цвет до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_rows_on_select(${row_id}, '${class_name}')">Удалить выделенные строки</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_on_select(${row_id}, '${class_name}')">Удалить выделенные ячейки</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
                 )
+                
             .show('fast');
         }
     });
+
+}
+
+
+
+function setColor(current_id, className, color) {
+    let cells_edited = {};
+    let selectedRows = gridOptions.api.getSelectedNodes();
+    selectedRows.forEach(function(row, index){
+      let logKey = `${className}-${String(row.data['id'])}`;
+      cells_edited[logKey] = {'previous': row.data[className]};
+      let new_value = {'value': row.data[className]['value'], 'color': colors[color]};
+      row.setDataValue(className, new_value);
+    })
+    gridOptions.api.deselectAll();
+    
+
+    addLog('manual_editing', cells_edited);
 }
 
 
 function raise_date_context(event, id, columnName) {
+    let left = Number(event.pageX);
+    let top = Number(event.pageY);
+    if (window.innerHeight - event.pageY < 300){
+      top = top - 292;
+    }
+    if (window.innerWidth - event.pageX < 215){
+    left = left - 207;
+    }
+    let row = gridOptions.api.getRowNode(id); 
+    row.setSelected(true);
     const row_id = id;
     const class_name = columnName;
     document.oncontextmenu = function() {return false;};
@@ -769,15 +966,28 @@ function raise_date_context(event, id, columnName) {
               class: 'context-menu'
             })
             .css({
-              left: event.pageX+'px',
-              top: event.pageY+'px'
+              left: String(left) + 'px',
+              top: String(top) + 'px'
             })
             .appendTo('body')
             .append(
                 $('<ul/>').append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_to_end(${row_id}, '${class_name}')"  >Продлить до конца</span></li>`)
                 .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_to_end_with_step(${row_id})">Продлить до конца со сдвигом</span></li>`)
-                .append(`<li><span style="cursor: pointer;" id="delete-to-end" onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
                 .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_row_to_end(${row_id})"  >Продлить всю строку до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="extend_on_select(${row_id}, '${class_name}')">Продлить на выделенное</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="extend_row_on_select(${row_id}, '${class_name}')">Продлить строку на выделенное</span></li>`)
+
+                .append(`<li style="display:flex;flex-direction:row;align-items:center;">
+                          <span style="height:28px; margin-right:7px">Цвет:</span>
+                          <div style="border-radius: 15px;cursor: pointer; background-color:${colors['blue']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'blue')"></div>
+                          <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['green']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'green')"></div>
+                          <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['yellow']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'yellow')"></div>                         
+                        </li>`
+                        )
+                .append(`<li><span style="cursor: pointer;"  onClick="continue_color_to_end(${row_id}, '${class_name}')">Продлить цвет до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_rows_on_select(${row_id}, '${class_name}')">Удалить выделенные строки</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_on_select(${row_id}, '${class_name}')">Удалить выделенные ячейки</span></li>`)
+                .append(`<li><span style="cursor: pointer;" id="delete-to-end" onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
                 )
             .show('fast');
         }
@@ -786,6 +996,16 @@ function raise_date_context(event, id, columnName) {
 
 
 function raise_id_context(event, id, columnName) {
+    let left = Number(event.pageX);
+    let top = Number(event.pageY);
+    if (window.innerHeight - event.pageY < 300){
+      top = top - 292;
+    }
+    if (window.innerWidth - event.pageX < 215){
+      left = left - 207;
+    }
+    let row = gridOptions.api.getRowNode(id); 
+    row.setSelected(true);
     let row_id = id;
     const class_name = columnName;
     document.oncontextmenu = function() {return false;};
@@ -795,19 +1015,82 @@ function raise_id_context(event, id, columnName) {
               class: 'context-menu'
             })
             .css({
-              left: event.pageX+'px',
-              top: event.pageY+'px'
+              left: String(left) + 'px',
+              top: String(top) + 'px'
             })
             .appendTo('body')
             .append(
                 $('<ul/>').append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_to_end(${row_id}, '${class_name}')"  >Продлить до конца</span></li>`)
                 .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_id_to_end_with_step(${row_id})">Продлить до конца со сдвигом</span></li>`)
-                .append(`<li><span style="cursor: pointer;" id="delete-to-end" onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
                 .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="continue_row_to_end(${row_id})"  >Продлить всю строку до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;" id="continue-to-end" onClick="extend_on_select(${row_id}, '${class_name}')">Продлить на выделенное</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="extend_row_on_select(${row_id}, '${class_name}')">Продлить строку на выделенное</span></li>`)
+                .append(`<li style="display:flex;flex-direction:row;align-items:center;">
+                  <span style="height:28px; margin-right:7px">Цвет:</span>
+                  <div style="border-radius: 15px;cursor: pointer; background-color:${colors['blue']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'blue')"></div>
+                  <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['green']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'green')"></div>
+                  <div style="margin-left: 5px;border-radius: 15px;cursor: pointer; background-color:${colors['yellow']}; height:18px; width: 18px" id="continue-to-end" onClick="setColor(${row_id}, '${class_name}', 'yellow')"></div>                         
+                </li>`
                 )
+                .append(`<li><span style="cursor: pointer;"  onClick="continue_color_to_end(${row_id}, '${class_name}')">Продлить цвет до конца</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_on_select(${row_id}, '${class_name}')">Удалить выделенные ячейки</span></li>`)
+                .append(`<li><span style="cursor: pointer;"  onClick="delete_rows_on_select(${row_id}, '${class_name}')">Удалить выделенные строки</span></li>`)
+                .append(`<li><span style="cursor: pointer;" id="delete-to-end" onClick="delete_to_end(${row_id}, '${class_name}')">Удалить ниже</span></li>`)
+                )
+                
             .show('fast');
         }
     });
+}
+
+
+
+function extend_on_select(current_id, className) {
+    let cells_edited = {};
+    let selectedRows = gridOptions.api.getSelectedNodes();
+    let thisRow = gridOptions.api.getRowNode(current_id); 
+
+    const new_value = thisRow.data[className];
+    selectedRows.forEach(function(row,index){
+
+            let previous = row.data[className];
+            const logKey1 = `${className}-${String(row.data['id'])}`;
+            row.setDataValue(className, {'value':new_value['value'],'color': previous['color']});
+            if (className == 'DateBegin'){
+              let next_date = new Date(new_value['value']);
+              next_date.setDate(next_date.getDate() + 30);
+              const logKey2 = `${'DateEnd'}-${String(row.data['id'])}`;
+              cells_edited[logKey2] = {'previous': row.data['DateEnd']};
+              row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+
+            }
+            cells_edited[logKey1] = {'previous': previous};
+    })
+    gridOptions.api.deselectAll();  
+    addLog('continue_to_end', cells_edited);
+}
+
+function delete_on_select(current_id, className) {
+    let cells_edited = {};
+    let selectedRows = gridOptions.api.getSelectedNodes();
+    const new_value = {'value': '', 'color':'white'};
+    selectedRows.forEach(function(row,index){
+
+            let previous = row.data[className];
+            const logKey1 = `${className}-${String(row.data['id'])}`;
+            row.setDataValue(className, {'value':new_value['value'],'color': previous['color']});
+            if (className == 'DateBegin'){
+              let next_date = new Date(new_value['value']);
+              next_date.setDate(next_date.getDate() + 30);
+              const logKey2 = `${'DateEnd'}-${String(row.data['id'])}`;
+              cells_edited[logKey2] = {'previous': row.data['DateEnd']};
+              row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+
+            }
+            cells_edited[logKey1] = {'previous': previous};
+    })
+    gridOptions.api.deselectAll();
+    addLog('continue_to_end', cells_edited);
 }
 
 
@@ -829,7 +1112,7 @@ function continue_to_end(current_id, className) {
               next_date.setDate(next_date.getDate() + 30);
               const logKey2 = `${'DateEnd'}-${String(id)}`;
               cells_edited[logKey2] = {'previous': row.data['DateEnd']};
-              row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': previous['color']});
+              row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
 
             }
             cells_edited[logKey1] = {'previous': previous};
@@ -838,6 +1121,26 @@ function continue_to_end(current_id, className) {
     addLog('continue_to_end', cells_edited);
 }
 
+
+function continue_color_to_end(current_id, className) {
+    let cells_edited = {};
+    let current_row = gridOptions.api.getRowNode(current_id);
+
+    ids = getIds(projectData, current_id + 1);
+
+    const new_value = current_row.data[className];
+    ids.forEach(function(id,index){
+            let row = gridOptions.api.getRowNode(id); 
+            let previous = row.data[className];
+            const logKey1 = `${className}-${String(id)}`;
+
+            row.setDataValue(className, {'value':previous['value'],'color': new_value['color']});
+
+            cells_edited[logKey1] = {'previous': previous};
+    })
+
+    addLog('continue_to_end', cells_edited);
+}
 
 function continue_row_to_end(current_id) {
     let cells_edited = {};
@@ -863,8 +1166,8 @@ function continue_row_to_end(current_id) {
       'Title',
       'Description',
       'Price',
-      'PriceType',
-      'Images'];
+      'PriceType'
+      ];
     ids.forEach(function(id,index){
         let row = gridOptions.api.getRowNode(id); 
         column_classes.forEach(function(className, index){
@@ -877,6 +1180,43 @@ function continue_row_to_end(current_id) {
     addLog('continue_row_to_end', cells_edited);
 }
 
+function extend_row_on_select(current_id) {
+    let selectedRows = gridOptions.api.getSelectedNodes();
+    let cells_edited = {};
+    let current_row = gridOptions.api.getRowNode(current_id );
+    const new_value = current_row.data;
+    const column_classes = [
+      'DateBegin',
+      'DateEnd',
+      'ListingFee',
+      'AdStatus',
+      'ContactMethod',
+      'CompanyName',
+      'ManagerName',
+      'ContactPhone',
+      'VideoUrl',
+      'Address',
+      'Category',
+      'GoodsType',
+      'AdType',
+      'GoodsSubType',
+      'Condition',
+      'Title',
+      'Description',
+      'Price',
+      'PriceType',
+      ];
+    selectedRows.forEach(function(row,index){
+        column_classes.forEach(function(className, index){
+        let previous = row.data[className];
+        let logKey = `${className}-${String(row.data['id'])}`;
+        cells_edited[logKey] = {'previous': previous};
+        row.setDataValue(className, {'value':new_value[className]['value'],'color': previous['color']});
+      })
+    })
+    gridOptions.api.deselectAll();
+    addLog('continue_row_to_end', cells_edited);
+}
 
 function continue_to_end_with_step(current_id) {
     let cells_edited = {};
@@ -902,7 +1242,7 @@ function continue_to_end_with_step(current_id) {
 
             let next_date = new Date(get_string_date(new_value));
             next_date.setDate(next_date.getDate() + 30);
-            next_row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': previous['color']});
+            next_row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
 
             cells_edited[logKey1] = {'previous': previous_value_1};
             cells_edited[logKey2] = {'previous': previous_value_2};
@@ -996,13 +1336,13 @@ function undo(){
     let last_log = change_log.pop();
 
     if (last_log){
-        if ((last_log.action == 'manual_editing') || (last_log.action == 'continue_to_end') || (last_log.action == 'paste') || (last_log.action == 'delete_to_end') || (last_log.action == 'continue_row_to_end') || (last_log.action == 'load_images') ) {
+        if ((last_log.action == 'manual_editing') || (last_log.action == 'find_replace') || (last_log.action == 'continue_to_end') || (last_log.action == 'paste') || (last_log.action == 'delete_to_end') || (last_log.action == 'continue_row_to_end') || (last_log.action == 'load_images') ) {
             Object.keys(last_log.cells).forEach(function (item, index) {
               let id = item.split('-')[1];
               let className = item.split('-')[0];
               let previous = last_log['cells'][item]['previous'];
               let row = gridOptions.api.getRowNode(id);
-
+           
               row.setDataValue(className, {'value':previous['value'],'color': previous['color']});
             })
         }
@@ -1062,7 +1402,7 @@ document.addEventListener("paste", function (e) {
       let log_name = `${column_class}-${id}`;
       let row = gridOptions.api.getRowNode(String(id));
       cells_edited[log_name] = {'previous': row.data[column_class]};
-      row.setDataValue(column_class, {'value':pasted_array[index],'color': 'white'});
+      row.setDataValue(column_class, {'value':pasted_array[index],'color': row.data[column_class]['color']});
     })
 
     addLog('paste', cells_edited);
@@ -1073,4 +1413,16 @@ document.addEventListener("paste", function (e) {
 
 function print_table(){
   console.log(projectData);
+}
+
+function change_input_state(elem) {
+  let input = document.getElementById('unique-amount');
+  if (elem.checked){
+      input.disabled = true;
+      input.value ='';
+  }
+  else{
+    input.disabled = false;
+    input.value =1;
+  }
 }
