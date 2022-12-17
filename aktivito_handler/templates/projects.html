@@ -1,4 +1,5 @@
 {% load static %}
+{% load valid_name %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,7 @@
     </style>
 </head>
 <body>
-
+<a href="{% url 'update_old_projects_data' %}" >Обновить проекты</a>
 <div class="modal fade" id="DeleteProjectModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -128,17 +129,18 @@
                     </td>
                     <td style="width: 10%" >
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="{% url 'project_editing_1' project%}">Редактор 1</a>
+                            <a class="btn btn-sm btn-outline-success " href="{% url 'project_editing_1' project.id%}">Редактор 1</a>
                         </div>
                     </td>
                     <td style="width: 10%">
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="{% url 'project_editing_2' project%}">Редактор 2</a>
+                            <a class="btn btn-sm btn-outline-success " href="{% url 'project_editing_2' project.id%}">Редактор 2</a>
                         </div>
                     </td>
                     <td style="width: 47% ">
                         <div>
-                            <span style="word-break: break-all;"><a href='{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx' >{{domen_adress}}media/projects/{{user.username}}/{{project}}/{{project}}.xlsx</a></span>
+                            <span style="word-break: break-all;"><a href='{{domen_adress}}media/projects/{{user.username}}/{{project.project_name|make_valid_name}}/{{project.project_name|make_valid_name}}.xlsx'>
+                                {{domen_adress}}media/projects/{{user.username}}/{{project.project_name|make_valid_name}}/{{project.project_name|make_valid_name}}.xlsx</a></span>
                         </div>
                     </td>
                     <td style="width: 8%">
@@ -202,6 +204,8 @@ let csrf = $("input[name=csrfmiddlewaretoken]").val();
                 exist_modal.show();
                 }
                 if (response.message == 'success'){
+                let project_pk = response.project_pk;
+                let valid_project_name = response.valid_project_name;
                 let new_row = `
                 <tr >
                     <td  style="width: 25% ">
@@ -211,17 +215,17 @@ let csrf = $("input[name=csrfmiddlewaretoken]").val();
                     </td>
                     <td style="width: 10%" >
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-1/">Редактор 1</a>
+                            <a class="btn btn-sm btn-outline-success " href="/${project_pk}/editing-1/">Редактор 1</a>
                         </div>
                     </td>
                     <td style="width: 10%">
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-2/">Редактор 2</a>
+                            <a class="btn btn-sm btn-outline-success " href="/${project_pk}/editing-2/">Редактор 2</a>
                         </div>
                     </td>
                     <td style="width: 47% ">
                         <div>
-                            <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx</a></span>
+                            <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${valid_project_name}/${valid_project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${valid_project_name}/${valid_project_name}.xlsx</a></span>
                         </div>
                     </td>
                     <td style="width: 8%">
@@ -317,6 +321,8 @@ function load_project(){
             success: function(response) {
                 if (response.message == 'success'){
                     let project_name = response.project_name;
+                    let valid_project_name = response.valid_project_name;
+                    let project_pk = response.project_pk;
                                                    let new_row = `
                 <tr >
                     <td  style="width: 25% ">
@@ -326,17 +332,17 @@ function load_project(){
                     </td>
                     <td style="width: 10%" >
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-1/">Редактор 1</a>
+                            <a class="btn btn-sm btn-outline-success " href="/${project_pk}/editing-1/">Редактор 1</a>
                         </div>
                     </td>
                     <td style="width: 10%">
                         <div class="d-flex align-items-center justify-content-center">
-                            <a class="btn btn-sm btn-outline-success " href="/${project_name}/editing-2/">Редактор 2</a>
+                            <a class="btn btn-sm btn-outline-success " href="/${project_pk}/editing-2/">Редактор 2</a>
                         </div>
                     </td>
                     <td style="width: 47% ">
                         <div>
-                            <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${project_name}/${project_name}.xlsx</a></span>
+                            <span style="word-break: break-all;"><a href="{{domen_adress}}media/projects/{{user.username}}/${valid_project_name}/${valid_project_name}.xlsx" style="margin: 10px;">{{domen_adress}}media/projects/{{user.username}}/${valid_project_name}/${valid_project_name}.xlsx</a></span>
                         </div>
                     </td>
                     <td style="width: 8%">

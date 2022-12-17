@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{% static 'airdatepicker/air-datepicker.js' %}"></script>
-    <script src="{% static 'scripts3.js' %}"></script>
+    <script src="{% static 'scripts4.js' %}"></script>
 </head>
 
 <body>
@@ -142,8 +142,6 @@
             <option value="{{preset.preset_name}}">{{preset.preset_name}}</option>
             {% endfor %}
             </select>
-            <label style="margin-left:40px; margin-right:20px">Число уникализаций: </label> <input style="width:70px; height:30px;" class="form-control" id="unique-amount" type="text" disabled>
-            <label for="unique-amount-box" style="margin-left:20px; margin-right:5px">Max</label><input type="checkbox" id="unique-amount-box" onChange="change_input_state(this)" checked>
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-0">
             <div class="d-flex flex-row " style="margin-bottom: 8px">
@@ -223,20 +221,18 @@
     <script>
         let csrf = $("input[name=csrfmiddlewaretoken]").val();
 
-        function  upload_files(elem, file_id, row_id) {
+        function  upload_files(elem, row_id) {
             let cells_edited = {};
             let formData = new FormData();
+            console.log(elem.currentTarget);
             let row = elem.currentTarget.parentNode.parentNode.parentNode;
-            let thisRow = projectData.find(o => o.id === String(row_id));
-            let rowIndex = projectData.indexOf(thisRow);
-            let files_input = row.getElementsByClassName(`load-files-input-${file_id}`)[0];
-            let unique_checkbox = row.getElementsByClassName(`load-files-unique-checkbox-${file_id}`)[0];
-            let multi_unique_checkbox = row.getElementsByClassName(`load-files-multi-unique-checkbox-${file_id}`)[0];
+
+            let files_input = row.getElementsByClassName(`load-files-input`)[0];
+
+            let unique_checkbox = row.getElementsByClassName(`load-files-checkbox`)[0];
+
             let files = files_input.files;
-            let unique_amount = projectData.length-Number(rowIndex)+1;
-            if (!Number(document.getElementById('unique-amount-box').checked)){
-                unique_amount = Number(document.getElementById('unique-amount').value);
-            }
+
             if (files.length){
                 for (k=0;k<files.length;k++) {
                     formData.append('files',files[k])
@@ -244,12 +240,11 @@
                 formData.append("csrfmiddlewaretoken", csrf);
                 formData.append("project_name", String(document.getElementById('project-name').value));
                 formData.append("make_unique", Number(unique_checkbox.checked));
-                formData.append("propagate", [Number(multi_unique_checkbox.checked), unique_amount]);
                 let preset_selector = document.getElementById('preset-selector');
                 formData.append("preset", preset_selector.options[preset_selector.selectedIndex].value);
 
                 $.ajax({
-                url: "{%url 'load_files_2'%}",
+                url: "{%url 'load_files_1'%}",
                 dataType: 'json',
                 cache: false,
                 contentType: false,
@@ -264,22 +259,16 @@
                 success: function(response) {
                             if (response) {
                                 let urls = response['urls'];
-                                if (urls){
-                                    ids = getIds(projectData, row_id);
-                                    for (let k = 0; k < urls.length; k++){
-                                        let row = gridOptions.api.getRowNode(ids[k]);
-                                        if (row){
-                                            let previous = row.data['Images'];
-                                            let urls_obj = {};
-                                            if (previous['value']) {
-                                                urls_obj = JSON.parse(previous['value']);
-                                            }
-                                            urls_obj[file_id] = urls[k];
-                                            let newValue = JSON.stringify(urls_obj);
-                                            cells_edited[`Images-${ids[k]}`] = {'previous': previous};
-                                            row.setDataValue('Images', {'value':newValue,'color': previous['color']});
-                                        }
-                                    }
+                                let row = gridOptions.api.getRowNode(row_id);
+                                if (row){
+                                    let previous = row.data['Images'];
+                                    let urls_obj = {};
+                                    urls.forEach(function(url, index){
+                                        urls_obj[index+1] = url;
+                                        let newValue = JSON.stringify(urls_obj);
+                                        cells_edited[`Images-${row_id}`] = {'previous': previous};
+                                        row.setDataValue('Images', {'value':newValue,'color': previous['color']});
+                                    })
                                 }
                                 addLog('load_images', cells_edited);
                                 setTimeout(() => load_files_modal.hide(), 500);

@@ -1,7 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.db.models import JSONField
+import json
 
+empty_data = json.dumps([])
 
 class ListingFee(models.Model):
     fee = models.TextField()
@@ -49,6 +52,7 @@ class Project(models.Model):
     creator = models.TextField()
     authors = ArrayField(models.TextField(blank=True), size=50, default=list)
     creation_time = models.DateTimeField(auto_now_add=True)
+    data = JSONField(default=list)
 
     def __str__(self):
         return self.project_name

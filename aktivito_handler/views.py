@@ -17,7 +17,13 @@ import numpy as np
 import openpyxl
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-# Create your views here.
+from transliterate import translit
+
+
+def make_valid_name(ru_text):
+    en_text = translit(ru_text, language_code='ru', reversed=True)
+    text_list = list(map(lambda s: s[0].upper() + s[1:], en_text.split(' ')))
+    return ''.join(text_list)
 
 
 def get_preset(preset_name):
@@ -44,6 +50,7 @@ def get_preset(preset_name):
             brightnesses = [i for i in range(int(brightness_coeffs[0]), int(brightness_coeffs[1]) + 1)]
             return [borders, resize_ratios, contrast_bottoms, contrast_tops, brightnesses, color_fluctuation]
     return []
+
 
 def delete_metatags(image_path):
     if image_path.split('.')[-1] not in  ['png', 'Png', 'PNG']:
@@ -85,7 +92,6 @@ def image_filters(img, bottom_contrast, top_contrast, brightness, color_fluctuat
         return img
 
 
-
 def _make_unique(files, borders, resize_ratios, contrast_bottoms, contrast_tops, brightnesses, color_fluctuation):
     for file in files:
         imagename = file
@@ -100,69 +106,6 @@ def _make_unique(files, borders, resize_ratios, contrast_bottoms, contrast_tops,
                             color_fluctuation)
         img.save(imagename)
 
-
-@login_required(login_url = '/login/')
-def editing_view_1(request, project_name):
-    context = {
-        'project_name': project_name,
-        'categories': Category.objects.all(),
-        'listing_fees': ListingFee.objects.all(),
-        'ad_statuses': AdStatus.objects.all(),
-        'contact_methods': ContactMethod.objects.all(),
-        'ad_types': AdType.objects.all(),
-        'conditions': Condition.objects.all(),
-        'price_types': PriceType.objects.all(),
-        'presets': Preset.objects.all()
-    }
-
-    if os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{project_name}.xlsx'):
-        project_path = f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{project_name}.xlsx'
-        excel_data_df = pd.read_excel(project_path, sheet_name='Sheet1').fillna(value='')
-        json_table = excel_data_df.to_json(orient='records', force_ascii=False)
-        rows = json.loads(json_table)
-        context.update([('rows', rows)])
-    else:
-        return render(request, 'project_handler1.html', context=context)
-    return render(request, 'project_handler1.html', context=context)
-
-@login_required(login_url = '/login/')
-def editing_view_2(request, project_name):
-    context = {
-        'project_name': project_name,
-        'categories': Category.objects.all(),
-        'listing_fees': ListingFee.objects.all(),
-        'ad_statuses': AdStatus.objects.all(),
-        'contact_methods': ContactMethod.objects.all(),
-        'ad_types': AdType.objects.all(),
-        'conditions': Condition.objects.all(),
-        'price_types': PriceType.objects.all(),
-        'presets': Preset.objects.all()
-    }
-
-    if os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{project_name}.xlsx'):
-        project_path = f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{project_name}.xlsx'
-        excel_data_df = pd.read_excel(project_path, sheet_name='Sheet1').fillna(value='')
-        json_table = excel_data_df.to_json(orient='records', force_ascii=False)
-        rows = json.loads(json_table)
-        for row in rows:
-            row['Images'] = make_dict_images(row['Images'])
-            row['IdRow'] = row.pop('Id')
-        rows = json.dumps(excel_to_project(rows), ensure_ascii=False)
-
-        context.update([('rows', rows)])
-    else:
-        return render(request, 'project_handler3.html', context=context)
-    return render(request, 'project_handler3.html', context=context)
-
-def excel_to_project(rows):
-    index = 0
-    for row in rows:
-
-        for key in row.keys():
-            row[key] = {'value': row[key], 'color': 'white'}
-        row['id'] = str(index)
-        index += 1
-    return rows
 
 def make_images_row(input_string):
     if input_string:
@@ -179,15 +122,51 @@ def make_images_row(input_string):
             images_string += ' | ' + array[key]
     return images_string
 
-def make_dict_images(input_string):
 
 
-    images_array = input_string.split(' | ')
-    images = dict(zip(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], images_array))
+def update_old_projects_data(request):
+    for project in Project.objects.filter(authors__contains=[request.user.username]):
+        project.data = excel_to_json(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project.project_name}/{project.project_name}.xlsx')
+        project.save()
+    return JsonResponse({'message': 'success'})
 
 
+@login_required(login_url = '/login/')
+def editing_view_1(request, project_pk):
+    project_object = Project.objects.get(pk=project_pk)
+    if not project_object.data:
+        project_object.data = excel_to_json(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_object.project_name}/{project_object.project_name}.xlsx')
+    context = {
+        'project': project_object,
+        'categories': Category.objects.all(),
+        'listing_fees': ListingFee.objects.all(),
+        'ad_statuses': AdStatus.objects.all(),
+        'contact_methods': ContactMethod.objects.all(),
+        'ad_types': AdType.objects.all(),
+        'conditions': Condition.objects.all(),
+        'price_types': PriceType.objects.all(),
+        'presets': Preset.objects.all(),
+        'rows': project_object.data,
+    }
+    return render(request, 'project_handler4.html', context=context)
 
-    return json.dumps(images, ensure_ascii=False)
+
+@login_required(login_url = '/login/')
+def editing_view_2(request, project_pk):
+    project_object = Project.objects.get(pk=project_pk)
+    context = {
+        'project': project_object,
+        'categories': Category.objects.all(),
+        'listing_fees': ListingFee.objects.all(),
+        'ad_statuses': AdStatus.objects.all(),
+        'contact_methods': ContactMethod.objects.all(),
+        'ad_types': AdType.objects.all(),
+        'conditions': Condition.objects.all(),
+        'price_types': PriceType.objects.all(),
+        'presets': Preset.objects.all(),
+        'rows': project_object.data,
+    }
+    return render(request, 'project_handler3.html', context=context)
 
 
 def _new_filename(filename):
@@ -199,18 +178,51 @@ def _new_filename(filename):
         if not new_path.exists():
             return new_path
 
+
 def _handle_uploaded_file(f, username, project_name):
     '''Запись в файл "покусочно"'''
-    path = _new_filename(f'{settings.MEDIA_ROOT}/projects/{username}/{project_name}/pics/{f.name}')
+    valid_project_name = make_valid_name(project_name)
+    path = _new_filename(f'{settings.MEDIA_ROOT}/projects/{username}/{valid_project_name}/pics/{make_valid_name(f.name)}')
     name = os.path.split(str(path))[-1]
     with open(path, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-        return f'projects/{username}/{project_name}/pics/{name}'
+        return f'projects/{username}/{valid_project_name}/pics/{name}'
+
+
+def make_dict_images(input_string):
+    images_array = input_string.split(' | ')
+    images = {'1': '', '2': '', '3': '', '4': '', '5': '', '6': '', '7': '', '8': '', '9': '', '10': ''}
+    for index in range(len(images_array)):
+        images[str(index+1)] = images_array[index]
+    return json.dumps(images, ensure_ascii=False)
+
+
+def excel_to_json(project_path):
+    if os.path.exists(project_path):
+        excel_data_df = pd.read_excel(project_path, sheet_name='Sheet1').fillna(value='')
+        json_table = excel_data_df.to_json(orient='records', force_ascii=False)
+        json_rows = json.loads(json_table)
+        index = 0
+        for row in json_rows:
+            row['Images'] = make_dict_images(row['Images'])
+            row['IdRow'] = row.pop('Id')
+            for key in row.keys():
+                row[key] = {'value': row[key], 'color': 'white'}
+            row['id'] = str(index)
+            index += 1
+        rows = json.dumps(json_rows, ensure_ascii=False)
+        return rows
+    return json.dumps([])
+
+
+def main_view(request):
+    return render(request, 'main.html')
+
 
 @login_required(login_url = '/login/')
 @ensure_csrf_cookie
-def load_files(request):
+def load_files_1(request):
     files = request.FILES.getlist('files')
     urls = []
     for f in files:
@@ -220,6 +232,7 @@ def load_files(request):
         if url:
             urls.append(settings.FULL_DOMEN_ADRESS + 'media/' + url)
     return JsonResponse({'urls': urls})
+
 
 @login_required(login_url = '/login/')
 @ensure_csrf_cookie
@@ -247,14 +260,41 @@ def load_files_2(request):
 @login_required(login_url = '/login/')
 @ensure_csrf_cookie
 def load_table(request):
+    message = ''
+    project_pk = request.POST['project_pk']
+    project_object_db = Project.objects.get(pk=project_pk)
+    project_name_db = project_object_db.project_name
+    project_name_request = request.POST['project_name']
     json_table = json.loads(request.POST['json_table'])
+    for k in range(len(json_table)):
+        json_table[k]['id'] = k
+
+    if project_name_request != project_name_db:
+        exists_projects = Project.objects.filter(authors__contains=[request.user.username], project_name=project_name_request)
+        if exists_projects:
+            message = 'already_exists'
+            return JsonResponse({'message': message})
+        else:
+            new_project = Project(creator=request.user.username, authors=[request.user.username, ],
+                                  project_name=project_name_request, data=json.dumps(json_table))
+            new_project.save()
+            message = 'new_created'
+        project_name = project_name_request
+    else:
+        project_object_db.data = json.dumps(json_table)
+        project_object_db.save()
+        project_name = project_name_db
+        message = 'saved'
+    valid_project_name = make_valid_name(project_name)
+    if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}'):
+        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
+        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/pics')
+
     json_table_for_pd = json_table
     for row in json_table_for_pd:
         del row['id']
         for key in row.keys():
             row[key] = row[key]['value']
-            # if key == 'IdRow':
-            #     row['Id'] = row.pop('IdRow')
         row['Images'] = make_images_row(row['Images'])
 
     df = pd.DataFrame(json_table_for_pd)
@@ -282,16 +322,7 @@ def load_table(request):
       'PriceType',
       'Images'])
 
-
-    project_name = request.POST['project_name']
-
-    if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
-        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
-        os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
-        new_project = Project(creator=request.user.username, authors=[request.user.username, ],
-                              project_name=project_name)
-        new_project.save()
-    with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{project_name}/{project_name}.xlsx', engine='xlsxwriter',
+    with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{valid_project_name}/{valid_project_name}.xlsx', engine='xlsxwriter',
                         engine_kwargs={"options": {"strings_to_urls": False}}) as writer:
         df.to_excel(writer,  index=False, sheet_name='Sheet1')
         workbook = writer.book
@@ -318,12 +349,7 @@ def load_table(request):
         worksheet.set_column(18, 18, int(150/7.25))
         worksheet.set_column(19, 19, int(150/7.25))
         worksheet.set_column(20, 20, int(830/7.25))
-
-    return JsonResponse({})
-
-
-def main_view(request):
-    return render(request, 'main.html')
+    return JsonResponse({'message': message})
 
 
 @login_required(login_url='/login/')
@@ -336,18 +362,18 @@ def projects_view(request, username):
     context = {'projects': projects[::-1], 'domen_adress': settings.FULL_DOMEN_ADRESS}
     return render(request, 'projects.html', context=context)
 
+
 def new_project_view(request):
-
     project_name = request.POST['project_name']
-
+    valid_project_name = make_valid_name(project_name)
     if project_name not in [project.project_name for project in Project.objects.filter(authors__contains=[request.user.username])]:
-        if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
+        if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}'):
             new_project = Project(creator=request.user.username, authors=[request.user.username,], project_name = project_name)
+            new_project.save()
             df = pd.DataFrame()
-            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
-            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
-
-            with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{project_name}/{project_name}.xlsx', engine='xlsxwriter',
+            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
+            os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/pics')
+            with pd.ExcelWriter(f'{settings.MEDIA_ROOT}/projects/{request.user.username}/{valid_project_name}/{valid_project_name}.xlsx', engine='xlsxwriter',
                                 engine_kwargs={"options": {"strings_to_urls": False}}) as writer:
                 df.to_excel(writer, index=False, sheet_name='Sheet1')
                 worksheet = writer.sheets['Sheet1']
@@ -372,11 +398,11 @@ def new_project_view(request):
                 worksheet.set_column(18, 18, int(150 / 7.25))
                 worksheet.set_column(19, 19, int(150 / 7.25))
                 worksheet.set_column(20, 20, int(830 / 7.25))
-            new_project.save()
-            return JsonResponse({'message': 'success', 'project_name': project_name})
+            return JsonResponse({'message': 'success', 'project_name': project_name, 'project_pk': new_project.id, 'valid_project_name': valid_project_name})
         else:
             return JsonResponse({'message': 'already_exists', 'project_name': project_name})
     return JsonResponse({'message': 'already_exists', 'project_name': project_name})
+
 
 def delete_project(request):
     project_name = request.POST['project_name']
@@ -394,21 +420,23 @@ def delete_project(request):
 
 
 def load_project(request):
+
     file = request.FILES['file']
     if file:
         project_name = file.name.split('.')[0]
-
+        valid_project_name = make_valid_name(project_name)
         if project_name not in [project.project_name for project in
                                 Project.objects.filter(authors__contains=[request.user.username])]:
-            if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}'):
+            if not os.path.exists(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}'):
                 new_project = Project(creator=request.user.username, authors=[request.user.username, ],
                                       project_name=project_name)
-                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}')
-                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/pics')
+                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
+                os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/pics')
 
-                path = default_storage.save(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_name}/{file.name}', ContentFile(file.read()))
+                path = f'{settings.BASE_DIR}/media/' + default_storage.save(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/{valid_project_name}.xlsx', ContentFile(file.read()))
+                new_project.data = excel_to_json(path)
                 new_project.save()
-                return JsonResponse({'message': 'success', 'project_name': project_name})
+                return JsonResponse({'message': 'success', 'project_name': project_name, 'project_pk': new_project.id, 'valid_project_name': valid_project_name})
 
             return JsonResponse({'message': 'already_exists', 'project_name': project_name})
         else:
