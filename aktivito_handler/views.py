@@ -118,11 +118,12 @@ def make_images_row(input_string):
     images_string = ''
     first_trigger = True
     for key in array.keys():
-        if first_trigger:
+        if first_trigger and array[key]:
             images_string += array[key]
             first_trigger = False
         else:
-            images_string += ' | ' + array[key]
+            if array[key]:
+                images_string += ' | ' + array[key]
     return images_string
 
 
@@ -137,8 +138,6 @@ def update_old_projects_data(request):
 @login_required(login_url = '/login/')
 def editing_view_1(request, project_pk):
     project_object = Project.objects.get(pk=project_pk)
-    if not project_object.data:
-        project_object.data = excel_to_json(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{project_object.project_name}/{project_object.project_name}.xlsx')
     context = {
         'project': project_object,
         'categories': Category.objects.all(),
