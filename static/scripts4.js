@@ -690,7 +690,7 @@ function delete_row(id){
   let row = gridOptions.api.getRowNode(String(id)); 
   let rowData = row.data;
   const res = gridOptions.api.applyTransaction({remove: [row.data]});
-  let dataRow = projectData.find(o => o.id === String(id));
+  let dataRow = projectData.find(o => o.id == String(id));
   let index = projectData.indexOf(dataRow);
   projectData.splice(index, 1);
   addLog('delete_row', {[id]: {'previous': rowData}});
@@ -728,7 +728,7 @@ function delete_rows_on_select(){
   selectedRows.forEach(function(row, index){
     rowsToDelete.push(row.data);
     rowsData[row.data['id']] = {'previous':row.data};
-    let thisRow = projectData.find(o => o.id === String(row.data['id']));
+    let thisRow = projectData.find(o => o.id == String(row.data['id']));
     let deleteIndex = projectData.indexOf(thisRow);
     projectData.splice(deleteIndex, 1);
   })
@@ -1286,7 +1286,7 @@ function undo(){
         let rowData = last_log['cells'][id]['previous'];
         projectData.push(rowData);
         projectData.sort(compareRow);
-        let thisRow = projectData.find(o => o.id === String(id));
+        let thisRow = projectData.find(o => o.id == String(id));
         let insertIndex = projectData.indexOf(thisRow);
         gridOptions.api.applyTransaction({add: [rowData], addIndex: Number(insertIndex)});
       })
