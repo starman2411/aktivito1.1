@@ -124,6 +124,16 @@ class DateBeginInputComp {
             row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
             manual_input(datepicker.$el,id,columnName);
           },
+          buttons: [
+            {
+                content(dp) {
+                    return 'Выбрать'
+                },
+                onClick(dp) {
+                    dp.hide();
+                }
+            }
+          ]
         });
         this.click_event_listener = (e) => {
           if ((e.which != 3) && !(e.shiftKey)) {
@@ -166,6 +176,16 @@ class DateBeginInputComp {
             row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
             manual_input(datepicker.$el,id,columnName);
           },
+          buttons: [
+            {
+                content(dp) {
+                    return 'Выбрать'
+                },
+                onClick(dp) {
+                    dp.hide();
+                }
+            }
+          ]
         });
 
         this.click_event_listener = (e) => {
@@ -221,6 +241,47 @@ class DateEndInputComp {
 }
 
 
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+
+function make_images_string(value){
+  let images = {};
+  let stringValue = '';
+  let firstTrigger = true;
+  if ((value) && (isJsonString(value))){
+    images = JSON.parse(value);
+  }
+  else if (value){
+    let images_array = value.split('|');
+    for(let index=0; index<10; index++){
+      if (images_array[index]){
+        images[String(index+1)] = images_array[index].trim();
+      }
+      else {
+        images[String(index+1)] = '';
+      }
+    }
+  }
+  for (let key in images) {
+    if ((firstTrigger)&&(images[key])) {
+      stringValue = images[key];
+      firstTrigger = false;
+    }
+    else if (images[key]){
+      stringValue = stringValue + ' | ' + images[key];
+    }
+  }
+  return [JSON.stringify(images), stringValue];
+}
+
+
 class TextAreaComp {
     init(params) {
         const id = params.node['data']['id'];
@@ -229,27 +290,15 @@ class TextAreaComp {
         const columnName = params.columnName;
         this.eGui = document.createElement('div');
         if (columnName == 'Images'){
-          let images = {};
-          if (value){
-            images = JSON.parse(value);
-          }
-          let stringValue = '';
-          let firstTrigger = true;
-          for (let key in images) {
-            if ((firstTrigger)&&(images[key])) {
-              stringValue = images[key];
-              firstTrigger = false;
-            }
-            else if (images[key]){
-              stringValue = stringValue + ' | ' + images[key];
-            }
-          }
+          let new_values = make_images_string(value);
+          let stringValue = new_values[1];
+          params.data['Images']['value'] = new_values[0];
           this.eGui.innerHTML = `
-            <div class="${columnName}">
-              <div class="${columnName}-wrapper">
-                <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${stringValue}</textarea>
-              </div>
+          <div class="${columnName}">
+            <div class="${columnName}-wrapper">
+              <textarea class="form-control textarea-field" data-previous="" style="background-color: ${color};">${stringValue}</textarea>
             </div>
+          </div>
           `;
         }
         else {
@@ -283,21 +332,9 @@ class TextAreaComp {
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
         if (columnName == 'Images'){
-          let images = {};
-          if (value){
-            images = JSON.parse(value);
-          }
-          let stringValue = '';
-          let firstTrigger = true;
-          for (let key in images){
-            if ((firstTrigger)&&(images[key])) {
-                stringValue = images[key];
-                firstTrigger = false;
-            }
-            else if (images[key]){
-                stringValue = stringValue + ' | ' + images[key];
-            }
-          }
+          let new_values = make_images_string(value);
+          let stringValue = new_values[1];
+          params.data['Images']['value'] = new_values[0];
           this.eGui.innerHTML = `
           <div class="${columnName}">
             <div class="${columnName}-wrapper">
