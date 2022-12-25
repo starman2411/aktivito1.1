@@ -18,7 +18,7 @@ import openpyxl
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from transliterate import translit
-
+import shutil
 
 def make_valid_name(ru_text):
     ru_text = ' '.join(ru_text.split())
@@ -202,8 +202,38 @@ def make_dict_images(input_string):
 
 def excel_to_json(project_path):
     if os.path.exists(project_path):
-        excel_data_df = pd.read_excel(project_path, sheet_name='Sheet1').fillna(value='')
+        columns = [
+            'Id',
+            'DateBegin',
+            'DateEnd',
+            'ListingFee',
+            'AdStatus',
+            'ContactMethod',
+            'CompanyName',
+            'ManagerName',
+            'ContactPhone',
+            'VideoUrl',
+            'Address',
+            'Category',
+            'GoodsType',
+            'AdType',
+            'GoodsSubType',
+            'Condition',
+            'Title',
+            'Description',
+            'Price',
+            'PriceType',
+            'Images']
+        excel_data_df = pd.read_excel(project_path).fillna(value='')
+        excel_data_df = excel_data_df.rename(columns=str.lower)
+        for column in columns:
+            if column.lower() not in excel_data_df:
+                excel_data_df[column.lower()] = ''
+        new_names = dict(zip([column.lower() for column in columns], columns))
+        excel_data_df = excel_data_df.rename(columns=new_names)
+        excel_data_df = excel_data_df.drop(columns=[col for col in excel_data_df if col not in columns])
         json_table = excel_data_df.to_json(orient='records', force_ascii=False)
+
         json_rows = json.loads(json_table)
         index = 0
         for row in json_rows:
@@ -215,6 +245,7 @@ def excel_to_json(project_path):
             index += 1
         rows = json.dumps(json_rows, ensure_ascii=False)
         return rows
+
     return json.dumps([])
 
 
@@ -434,10 +465,13 @@ def load_project(request):
                                       project_name=project_name)
                 os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
                 os.mkdir(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/pics')
-
-                path = f'{settings.BASE_DIR}/media/' + default_storage.save(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/{valid_project_name}.xlsx', ContentFile(file.read()))
-                new_project.data = excel_to_json(path)
-                new_project.save()
+                try:
+                    path = f'{settings.BASE_DIR}/media/' + default_storage.save(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}/{valid_project_name}.xlsx', ContentFile(file.read()))
+                    new_project.data = excel_to_json(path)
+                    new_project.save()
+                except:
+                    shutil.rmtree(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
+                    return JsonResponse({'message': 'error'})
                 return JsonResponse({'message': 'success', 'project_name': project_name, 'project_pk': new_project.id, 'valid_project_name': valid_project_name})
 
             return JsonResponse({'message': 'already_exists', 'project_name': project_name})
