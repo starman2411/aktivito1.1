@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Category, ListingFee, AdStatus, ContactMethod, Condition, PriceType, AdType, Project
+from .models import Category, ListingFee, AdStatus, ContactMethod, Condition, PriceType, AdType, Project, DealGoal
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 import itertools
@@ -144,6 +144,7 @@ def editing_view_1(request, project_pk):
         'listing_fees': ListingFee.objects.all(),
         'ad_statuses': AdStatus.objects.all(),
         'contact_methods': ContactMethod.objects.all(),
+        'deal_goals': DealGoal.objects.all(),
         'ad_types': AdType.objects.all(),
         'conditions': Condition.objects.all(),
         'price_types': PriceType.objects.all(),
@@ -162,6 +163,7 @@ def editing_view_2(request, project_pk):
         'listing_fees': ListingFee.objects.all(),
         'ad_statuses': AdStatus.objects.all(),
         'contact_methods': ContactMethod.objects.all(),
+        'deal_goals': DealGoal.objects.all(),
         'ad_types': AdType.objects.all(),
         'conditions': Condition.objects.all(),
         'price_types': PriceType.objects.all(),
@@ -211,6 +213,7 @@ def excel_to_json(project_path):
             'ContactMethod',
             'CompanyName',
             'ManagerName',
+            'DealGoal',
             'ContactPhone',
             'VideoUrl',
             'Address',
@@ -341,6 +344,7 @@ def load_table(request):
       'ContactMethod',
       'CompanyName',
       'ManagerName',
+      'DealGoal',
       'ContactPhone',
       'VideoUrl',
       'Address',

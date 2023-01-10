@@ -190,10 +190,22 @@
 	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@28.2.1/dist/ag-grid-community.min.js"></script>
 
     <script>
+        const new_columns_names = [
+            'DealGoal',
+            ];
+
 		projectData = JSON.parse("{{rows|escapejs}}");
+		projectData.forEach(function(row, id){
+		    new_columns_names.forEach(function(column_name, index){
+		        if (!row.hasOwnProperty(column_name)){
+		            row[column_name] = {"value": "", "color": "white"};
+		        }
+		    })
+		})
 		let selects_library= {};
 		{% get_category_cascade as category_cascade%}
 		{% get_contact_methods as contact_methods_list%}
+		{% get_deal_goals as deal_goals_list%}
 		{% get_listing_fees as listing_fees%}
 		{% get_ad_statuses as ad_statuses%}
 		{% get_ad_types as ad_types%}
@@ -201,6 +213,7 @@
 		{% get_price_types as price_types%}
 		const category_cascade = JSON.parse("{{category_cascade|escapejs }}");
 		selects_library['ContactMethod'] = JSON.parse("{{contact_methods_list|escapejs }}");
+		selects_library['DealGoal'] = JSON.parse("{{deal_goals_list|escapejs }}");
 		selects_library['ListingFee'] = JSON.parse("{{listing_fees|escapejs }}");
 		selects_library['AdStatus'] = JSON.parse("{{ad_statuses|escapejs }}");
 		selects_library['AdType'] = JSON.parse("{{ad_types|escapejs }}");

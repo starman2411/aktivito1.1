@@ -1,5 +1,5 @@
 from django import template
-from aktivito_handler.models import (Category, GoodsType, GoodsSubType, ContactMethod, ListingFee, AdStatus, AdType, Condition, PriceType)
+from aktivito_handler.models import (Category, GoodsType, GoodsSubType, ContactMethod, ListingFee, AdStatus, AdType, Condition, PriceType, DealGoal)
 import json
 
 register = template.Library()
@@ -24,6 +24,15 @@ def get_contact_methods():
     for method in ContactMethod.objects.all():
         output.append(method.method)
     return json.dumps(output, ensure_ascii=False)
+
+
+@register.simple_tag
+def get_deal_goals():
+    output = []
+    for goal in DealGoal.objects.all():
+        output.append(goal.goal)
+    return json.dumps(output, ensure_ascii=False)
+
 
 @register.simple_tag
 def get_listing_fees():

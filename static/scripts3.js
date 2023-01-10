@@ -15,6 +15,7 @@ function getEmptyRow(id, IdRow){
     'ContactMethod':{value:'', color:'white'},
     'CompanyName':{value:'', color:'white'},
     'ManagerName':{value:'', color:'white'},
+    'DealGoal':{value:'', color:'white'},
     'ContactPhone':{value:'', color:'white'},
     'VideoUrl':{value:'', color:'white'},
     'Address':{value:'', color:'white'},
@@ -104,13 +105,16 @@ class DateBeginInputComp {
         const columnName = params.columnName;
         this.eGui = document.createElement('div');
         this.eGui.innerHTML = `
+        <div class="${columnName}">
           <div class="${columnName}-wrapper" >
               <input type="text" class="form-control input-field" value="${value}" style="background-color:${color}">
           </div>
+        </div>
         `;
+        let current_time_zone = "+" + value.split('+')[1];
         let next_date = new Date(value);
         next_date.setDate(next_date.getDate() + 30);
-        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+        row.setDataValue('DateEnd', {'value':get_string_date(next_date, current_time_zone),'color': 'white'});
         this.dateInput = this.eGui.querySelector('input');
         this.datePicker = new AirDatepicker(this.dateInput, {
           timepicker: true,
@@ -127,7 +131,7 @@ class DateBeginInputComp {
           buttons: [
             {
                 content(dp) {
-                    return 'Выбрать'
+                    return 'Закрыть'
                 },
                 onClick(dp) {
                     dp.hide();
@@ -157,13 +161,16 @@ class DateBeginInputComp {
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
         this.eGui.innerHTML = `
+        <div class="${columnName}">
           <div class="${columnName}-wrapper" >
               <input type="text" class="form-control input-field" value="${value}" style="background-color:${color}">
           </div>
+        </div>
         `;
+        let current_time_zone = "+" + value.split('+')[1];
         let next_date = new Date(value);
         next_date.setDate(next_date.getDate() + 30);
-        row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+        row.setDataValue('DateEnd', {'value':get_string_date(next_date, current_time_zone),'color': 'white'});
         this.dateInput = this.eGui.querySelector('input');
         this.datePicker = new AirDatepicker(this.dateInput, {
           timepicker: true,
@@ -180,7 +187,7 @@ class DateBeginInputComp {
           buttons: [
             {
                 content(dp) {
-                    return 'Выбрать'
+                    return 'Закрыть'
                 },
                 onClick(dp) {
                     dp.hide();
@@ -218,9 +225,11 @@ class DateEndInputComp {
         const columnName = params.columnName;
         this.eGui = document.createElement('div');
         this.eGui.innerHTML = `
+        <div class="${columnName}">
           <div class="${columnName}-wrapper" >
               <input disabled type="text" class="form-control input-field" value="${value}">
           </div>
+        </div>
         `;     
     }
 
@@ -233,9 +242,11 @@ class DateEndInputComp {
         const color = params.data[params.columnName]['color'];
         const columnName = params.columnName;
         this.eGui.innerHTML = `
+        <div class="${columnName}">
           <div class="${columnName}-wrapper" >
               <input disabled type="text" class="form-control input-field" value="${value}">
           </div>
+        </div>
         `;   
         return true;
    }
@@ -689,6 +700,7 @@ let gridOptions = {
     {field: "ContactMethod", width:300, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'ContactMethod', cellRenderer: SelectComp, cellRendererParams: { columnName: "ContactMethod" }},
     {field: "CompanyName", width:200, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'CompanyName', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "CompanyName" }},
     {field: "ManagerName", width:200, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'ManagerName', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "ManagerName" }},
+    {field: "DealGoal", width:300, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'DealGoal', cellRenderer: SelectComp, cellRendererParams: { columnName: "DealGoal" }},
     {field: "ContactPhone", width:160, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'ContactPhone', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "ContactPhone" }},
     {field: "VideoUrl", width:210, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'VideoUrl', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "VideoUrl" }},
     {field: "Address", width:210, cellStyle: { 'padding-left': 1, 'padding-right': 1 }, headerName: 'Address', cellRenderer: TextAreaComp, cellRendererParams: { columnName: "Address" }},
@@ -728,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-function get_string_date(date) {
+function get_string_date(date, current_time_zone = null) {
   if (date != 'Invalid Date'){
     const date_string = String(date).split(' ');
     const year = date_string[3];
@@ -737,8 +749,15 @@ function get_string_date(date) {
     const time = date_string[4].split(':');
     const hour = time[0];
     const minute = time[1];
-    const time_zone_select = document.getElementById('timezone-selector');
-    const time_zone = time_zone_select.options[time_zone_select.selectedIndex].value;
+    let time_zone = null;
+    if (!current_time_zone){
+      const time_zone_select = document.getElementById('timezone-selector');
+      time_zone = time_zone_select.options[time_zone_select.selectedIndex].value;
+    }
+    else{
+      time_zone = current_time_zone;
+    }
+ 
     return year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':00' + time_zone;
   }
   return '';
@@ -938,6 +957,7 @@ function extend_color_on_select(current_id, columnName) {
     'ContactMethod',
     'CompanyName',
     'ManagerName',
+    'DealGoal',
     'ContactPhone',
     'VideoUrl',
     'Address',
@@ -1162,6 +1182,7 @@ function continue_row_to_end(current_id) {
     'ContactMethod',
     'CompanyName',
     'ManagerName',
+    'DealGoal',
     'ContactPhone',
     'VideoUrl',
     'Address',
@@ -1201,6 +1222,7 @@ function extend_row_on_select(current_id) {
       'ContactMethod',
       'CompanyName',
       'ManagerName',
+      'DealGoal',
       'ContactPhone',
       'VideoUrl',
       'Address',

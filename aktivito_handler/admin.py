@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ListingFee, AdStatus, ContactMethod, Category, GoodsType, GoodsSubType, PriceType, Condition, AdType
+from .models import ListingFee, AdStatus, ContactMethod, Category, GoodsType, GoodsSubType, PriceType, Condition, AdType, DealGoal
 
 
 class ListingFeeAdmin(admin.ModelAdmin):
@@ -10,6 +10,9 @@ class AdStatusAdmin(admin.ModelAdmin):
 
 class ContactMethodAdmin(admin.ModelAdmin):
     list_display = ('method',)
+
+class DealGoalAdmin(admin.ModelAdmin):
+    list_display = ('goal',)
 
 class ConditionAdmin(admin.ModelAdmin):
     list_display = ('condition',)
@@ -33,6 +36,7 @@ class GoodsSubTypeAdmin(admin.ModelAdmin):
 admin.site.register(ListingFee, ListingFeeAdmin)
 admin.site.register(AdStatus, AdStatusAdmin)
 admin.site.register(ContactMethod, ContactMethodAdmin)
+admin.site.register(DealGoal, DealGoalAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(GoodsType, GoodsTypeAdmin)
 admin.site.register(GoodsSubType, GoodsSubTypeAdmin)

@@ -17,6 +17,9 @@ class AdStatus(models.Model):
 class ContactMethod(models.Model):
     method = models.TextField()
 
+class DealGoal(models.Model):
+    goal = models.TextField()
+
 class AdType(models.Model):
     type = models.TextField()
 
