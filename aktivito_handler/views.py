@@ -57,12 +57,15 @@ def get_preset(preset_name):
 
 def delete_metatags(image_path):
     if image_path.split('.')[-1] not in  ['png', 'Png', 'PNG']:
-        with open(image_path, "rb") as file:
-            image = exif.Image(file)
-        if image.has_exif:
-            image.delete_all()
-        with open(image_path, 'wb') as updated_file:
-            updated_file.write(image.get_file())
+        try:
+            with open(image_path, "rb") as file:
+                image = exif.Image(file)
+            if image.has_exif:
+                image.delete_all()
+            with open(image_path, 'wb') as updated_file:
+                updated_file.write(image.get_file())
+        except:
+            pass
 
 
 def resize_image(img, ratio):
