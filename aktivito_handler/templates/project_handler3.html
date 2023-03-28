@@ -29,7 +29,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-body d-flex flex-column align-items-center" style="text-align: center;">
-        <span><strong>Идёт загрузка...</strong></span>
+        <span><strong  id="LoadFilesModalText">Идёт загрузка...</strong></span>
       </div>
     </div>
   </div>
@@ -115,9 +115,26 @@
 
 <div class="container d-flex flex-column justify-content-center table-container" style="min-width:100%; height: 85vh; padding: 0 20px;">
     <div style="width: 95vw">
-        <div class="d-flex align-items-center mb-2">
-            <label for="project-name" style="width:160px;" >Название проекта:</label>
-            <input type="text" style="width:300px; height:30px;" id="project-name" class="form-control" value="{{project.project_name}}">
+        <div class="d-flex flex-wrap align-items-center justify-content-between">
+            <div class="d-flex flex-row align-items-center mb-2" style="margin-bottom: 0px">
+                <label for="project-name" style="width:160px;" >Название проекта:</label>
+                <input type="text" style="width:300px; height:30px;" id="project-name" class="form-control" value="{{project.project_name}}">
+            </div>
+            <div class="d-flex flex-row align-items-center" >
+                <label for="compress-box" style="width:105px">Сжатие фото</label>
+                <input type="checkbox" style="margin-right:70px" id="compress-box"
+                       onclick="{document.getElementById('max-dimension').disabled = !(document.getElementById('max-dimension').disabled);
+                                 document.getElementById('quality-selector').disabled = !(document.getElementById('quality-selector').disabled);}">
+                <label for="max-dimension" style="width:190px;">Максимальный размер:</label>
+                <input disabled type="text" style="width:70px; height:30px;" id="max-dimension" class="form-control" value="">
+                <span style="width:30px; margin-left:3px; margin-right:70px">px</span>
+                <span style="width:90px;">Качество: </span>
+                <select id="quality-selector" disabled class="form-select form-select-sm" style="width:120px; margin-right:2px">
+                    <option value="0.9">Хорошее</option>
+                    <option value="0.7">Среднее</option>
+                    <option value="0.5">Низкое</option>
+                </select>
+            </div>
         </div>
         <div class="d-flex align-items-center mb-2">
             <span style="width:120px;">Часовой пояс: </span>
@@ -232,20 +249,76 @@
         let already_exists_modal = new bootstrap.Modal(document.getElementById("AlreadyExistsModal"), {});
         let new_created_modal = new bootstrap.Modal(document.getElementById("NewCreatedModal"), {});
     </script>
+    <script>
+        let file_trigger = 0;
 
+
+        function compressImage(files, row, file_id, row_id, quality=0.9, max_dimension=null) {
+            document.getElementById('LoadFilesModalText').innerHTML = 'Сжатие...';
+            load_files_modal.show();
+            let files_amount = files.length;
+            let new_files = [];
+            for (k=0;k<files.length;k++) {
+                const name = files[k].name.split('.')[0] + '.jpg';
+                const fileURL = URL.createObjectURL(files[k]);
+                const img = new Image();
+                img.src = fileURL;
+                img.addEventListener("load", () => {
+                    URL.revokeObjectURL(fileURL);
+                    const cvs = document.createElement("canvas");
+                    let new_width = img.naturalWidth;
+                    let new_height = img.naturalHeight;
+                    if (max_dimension)   {
+                        if ((img.naturalWidth > img.naturalHeight) && (max_dimension < img.naturalWidth)) {
+                            new_width = max_dimension;
+                            new_height = img.naturalHeight*max_dimension/img.naturalWidth;
+                        }
+                        else if (max_dimension < img.naturalHeight){
+                            new_height = max_dimension;
+                            new_width = img.naturalWidth*max_dimension/img.naturalHeight;
+                        }
+                    }
+                    cvs.width = new_width;
+                    cvs.height = new_height;
+                    cvs.getContext("2d").drawImage(img, 0, 0, new_width, new_height);
+                    cvs.toBlob(blob => {
+                        file_trigger = file_trigger + 1;
+                        new_files.push(new File([blob], name, {type: "image/jpeg",}))
+                        if (file_trigger >= files_amount) {
+                            file_trigger = 0;
+                            send_files(new_files, row, file_id, row_id);
+                        }
+                    }, "image/jpeg", quality);
+                }, {once: true});
+            }
+        }
+    </script>
     <script>
         let csrf = $("input[name=csrfmiddlewaretoken]").val();
 
         function  upload_files(elem, file_id, row_id) {
+            let row = elem.currentTarget.parentNode.parentNode.parentNode;
+            let files_input = row.getElementsByClassName(`load-files-input-${file_id}`)[0];
+
+            let files = files_input.files;
+            let compress_checkbox = document.getElementById('compress-box').checked;
+            if (compress_checkbox) {
+                compressImage(files, row, file_id, row_id, Number(document.getElementById('quality-selector').value), Number(document.getElementById('max-dimension').value));
+            }
+            else {
+                send_files(files, row, file_id, row_id);
+            }
+        }
+
+
+        function  send_files(files, row, file_id, row_id) {
+            document.getElementById('LoadFilesModalText').innerHTML = 'Идёт загрузка...';
             let cells_edited = {};
             let formData = new FormData();
-            let row = elem.currentTarget.parentNode.parentNode.parentNode;
             let thisRow = projectData.find(o => o.id === String(row_id));
             let rowIndex = projectData.indexOf(thisRow);
-            let files_input = row.getElementsByClassName(`load-files-input-${file_id}`)[0];
             let unique_checkbox = row.getElementsByClassName(`load-files-unique-checkbox-${file_id}`)[0];
             let multi_unique_checkbox = row.getElementsByClassName(`load-files-multi-unique-checkbox-${file_id}`)[0];
-            let files = files_input.files;
             let unique_amount = projectData.length-Number(rowIndex)+1;
             if (!Number(document.getElementById('unique-amount-box').checked)){
                 unique_amount = Number(document.getElementById('unique-amount').value);

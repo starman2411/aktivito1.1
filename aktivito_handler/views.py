@@ -19,6 +19,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from transliterate import translit
 import shutil
+from django.http import HttpResponseForbidden
+
 
 def make_valid_name(ru_text):
     ru_text = ' '.join(ru_text.split())
@@ -141,6 +143,8 @@ def update_old_projects_data(request):
 @login_required(login_url = '/login/')
 def editing_view_1(request, project_pk):
     project_object = Project.objects.get(pk=project_pk)
+    if request.user.username not in project_object.authors:
+        return HttpResponseForbidden()
     context = {
         'project': project_object,
         'categories': Category.objects.all(),
@@ -160,6 +164,8 @@ def editing_view_1(request, project_pk):
 @login_required(login_url = '/login/')
 def editing_view_2(request, project_pk):
     project_object = Project.objects.get(pk=project_pk)
+    if request.user.username not in project_object.authors:
+        return HttpResponseForbidden()
     context = {
         'project': project_object,
         'categories': Category.objects.all(),
@@ -394,6 +400,8 @@ def load_table(request):
 
 @login_required(login_url='/login/')
 def projects_view(request, username):
+    if request.user.username != username:
+        return HttpResponseForbidden()
     if os.path.isdir(f'{settings.BASE_DIR}/media/projects/{username}'):
         pass
     else:
