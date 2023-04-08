@@ -113,7 +113,7 @@ class DateBeginInputComp {
         `;
 
         let current_time_zone = "+" + value.split('+')[1];
-        let next_date = new Date(value);
+        let next_date = new Date(value.split('+')[0]);
         next_date.setDate(next_date.getDate() + 30);
         row.setDataValue('DateEnd', {'value':get_string_date(next_date, current_time_zone),'color': 'white'});
 
@@ -170,7 +170,7 @@ class DateBeginInputComp {
         `;
 
         let current_time_zone = "+" + value.split('+')[1];
-        let next_date = new Date(value);
+        let next_date = new Date(value.split('+')[0]);
         next_date.setDate(next_date.getDate() + 30);
         row.setDataValue('DateEnd', {'value':get_string_date(next_date, current_time_zone),'color': 'white'});
         
