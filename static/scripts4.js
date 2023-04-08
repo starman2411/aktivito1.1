@@ -1078,7 +1078,7 @@ function extend_on_select(current_id, className) {
     const logKey1 = `${className}-${String(row.data['id'])}`;
     row.setDataValue(className, {'value':new_value['value'],'color': previous['color']});
     if (className == 'DateBegin'){
-      let next_date = new Date(new_value['value']);
+      let next_date = new Date(new_value['value'].split('+')[0]);
       next_date.setDate(next_date.getDate() + 30);
       const logKey2 = `${'DateEnd'}-${String(row.data['id'])}`;
       cells_edited[logKey2] = {'previous': row.data['DateEnd']};
@@ -1100,7 +1100,7 @@ function delete_on_select(current_id, className) {
     const logKey1 = `${className}-${String(row.data['id'])}`;
     row.setDataValue(className, {'value':new_value['value'],'color': previous['color']});
     if (className == 'DateBegin'){
-      let next_date = new Date(new_value['value']);
+      let next_date = new Date(new_value['value'].split('+')[0]);
       next_date.setDate(next_date.getDate() + 30);
       const logKey2 = `${'DateEnd'}-${String(row.data['id'])}`;
       cells_edited[logKey2] = {'previous': row.data['DateEnd']};
@@ -1124,11 +1124,12 @@ function continue_to_end(current_id, className) {
     const logKey1 = `${className}-${String(id)}`;
     row.setDataValue(className, {'value':new_value['value'],'color': previous['color']});
     if (className == 'DateBegin'){
-      let next_date = new Date(new_value['value']);
+      let next_date = new Date(new_value['value'].split('+')[0]);
+      let time_zone = '+' + new_value['value'].split('+')[1];
       next_date.setDate(next_date.getDate() + 30);
       const logKey2 = `${'DateEnd'}-${String(id)}`;
       cells_edited[logKey2] = {'previous': row.data['DateEnd']};
-      row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+      row.setDataValue('DateEnd', {'value':get_string_date(next_date, time_zone),'color': 'white'});
     }
     cells_edited[logKey1] = {'previous': previous};
   })
@@ -1243,13 +1244,15 @@ function continue_to_end_with_step(current_id) {
       const logKey1 = `${'DateBegin'}-${String(id)}`;
       const logKey2 = `${'DateEnd'}-${String(id)}`;
       let new_value = new Date(previous['value'].split('+')[0]);
+      let time_zone = "+" + previous['value'].split('+')[1];
       let previous_value_1 = next_row.data['DateBegin'];
       let previous_value_2 = next_row.data['DateEnd'];
       new_value.setDate(new_value.getDate() + 1);
-      next_row.setDataValue('DateBegin', {'value':get_string_date(new_value),'color': previous['color']});
-      let next_date = new Date(get_string_date(new_value));
+      next_row.setDataValue('DateBegin', {'value':get_string_date(new_value, time_zone),'color': previous['color']});
+      // let next_date = new Date(get_string_date(new_value));
+      let next_date = new Date(new_value);
       next_date.setDate(next_date.getDate() + 30);
-      next_row.setDataValue('DateEnd', {'value':get_string_date(next_date),'color': 'white'});
+      next_row.setDataValue('DateEnd', {'value':get_string_date(next_date, time_zone),'color': 'white'});
       cells_edited[logKey1] = {'previous': previous_value_1};
       cells_edited[logKey2] = {'previous': previous_value_2};
     }
