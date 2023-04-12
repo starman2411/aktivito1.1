@@ -1179,6 +1179,7 @@ function continue_color_to_end(current_id, className) {
 
 
 function continue_row_to_end(current_id) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let cells_edited = {};
   let current_row = gridOptions.api.getRowNode(current_id );
   let ids = getIds(projectData, current_id + 1);
