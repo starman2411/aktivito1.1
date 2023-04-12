@@ -800,6 +800,7 @@ function delete_rows(){
 
 
 function delete_rows_on_select(){
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let selectedRows = gridOptions.api.getSelectedNodes();
   let rowsData = {}
   let rowsToDelete = [];
@@ -864,6 +865,7 @@ function addLog(action, cells) {
 
 
 function delete_to_end(current_id, className) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   const last_id = projectData[projectData.length-1]['id'];
   let cells_edited = {};
   const new_value = {'value': '', 'color': 'white'};
@@ -931,6 +933,7 @@ function raise_context(event, id, columnName) {
 
 
 function setColor(current_id, className, color) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let cells_edited = {};
   let selectedRows = gridOptions.api.getSelectedNodes();
   selectedRows.forEach(function(row, index){
@@ -945,6 +948,7 @@ function setColor(current_id, className, color) {
 
 
 function extend_color_on_select(current_id, columnName) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let thisRow = gridOptions.api.getRowNode(String(current_id)); 
   let color = thisRow.data[columnName]['color'];
   let cells_edited = {};
@@ -1086,6 +1090,7 @@ function raise_id_context(event, id, columnName) {
 
 
 function extend_on_select(current_id, className) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let cells_edited = {};
   let selectedRows = gridOptions.api.getSelectedNodes();
   let thisRow = gridOptions.api.getRowNode(current_id); 
@@ -1109,6 +1114,7 @@ function extend_on_select(current_id, className) {
 
 
 function delete_on_select(current_id, className) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let cells_edited = {};
   let selectedRows = gridOptions.api.getSelectedNodes();
   const new_value = {'value': '', 'color':'white'};
@@ -1131,6 +1137,7 @@ function delete_on_select(current_id, className) {
 
 
 function continue_to_end(current_id, className) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
   let cells_edited = {};
   let current_row = gridOptions.api.getRowNode(current_id);
   let ids = getIds(projectData, current_id + 1);
@@ -1155,6 +1162,7 @@ function continue_to_end(current_id, className) {
 
 
 function continue_color_to_end(current_id, className) {
+    setTimeout(() => {  $('.context-menu').remove(); }, 100);
     let cells_edited = {};
     let current_row = gridOptions.api.getRowNode(current_id);
     let ids = getIds(projectData, current_id + 1);
@@ -1211,6 +1219,7 @@ function continue_row_to_end(current_id) {
 
 
 function extend_row_on_select(current_id) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
     let selectedRows = gridOptions.api.getSelectedNodes();
     let cells_edited = {};
     let current_row = gridOptions.api.getRowNode(current_id );
@@ -1250,6 +1259,7 @@ function extend_row_on_select(current_id) {
 }
 
 function continue_to_end_with_step(current_id) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
     let cells_edited = {};
     let current_row = gridOptions.api.getRowNode(current_id);
     let ids = getIds(projectData, current_id);
@@ -1278,6 +1288,7 @@ function continue_to_end_with_step(current_id) {
 
 
 function continue_id_to_end_with_step(current_id) {
+  setTimeout(() => {  $('.context-menu').remove(); }, 100);
     const last_id = projectData[projectData.length-1]['id'];
     let cells_edited = {};
     let current_row = gridOptions.api.getRowNode(current_id);
@@ -1296,10 +1307,20 @@ function continue_id_to_end_with_step(current_id) {
 }
 
 
+
 $(document).ready(function() {
     $(document).mousedown(function(event) {
       if ($( ".context-menu" ).is( ":visible" ))  {
-          setTimeout(() => {  $('.context-menu').remove(); }, 100);
+          let context_width = parseFloat($(".context-menu" ).css("width").slice(0, -2));
+          let context_height = parseFloat($(".context-menu" ).css("height").slice(0, -2));
+          let context_left = parseFloat($(".context-menu" ).css("left").slice(0, -2));
+          let context_top = parseFloat($(".context-menu" ).css("top").slice(0, -2));
+          let mouse_x = event.pageX;
+          let mouse_y = event.pageY;
+          if (!((mouse_x >= context_left)&&(mouse_x  <= context_left + context_width)&&(mouse_y >= context_top)&&(mouse_y  <= context_top + context_height))){
+            setTimeout(() => {  $('.context-menu').remove(); }, 100);
+          }
+//          setTimeout(() => {  $('.context-menu').remove(); }, 100);
           document.oncontextmenu = function() {return true;};
       }
     });
