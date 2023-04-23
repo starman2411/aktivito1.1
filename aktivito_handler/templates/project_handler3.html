@@ -160,7 +160,13 @@
             {% endfor %}
             </select>
             <label style="margin-left:40px; margin-right:20px">Число уникализаций: </label> <input style="width:70px; height:30px;" class="form-control" id="unique-amount" type="text" disabled>
-            <label for="unique-amount-box" style="margin-left:20px; margin-right:5px">Max</label><input type="checkbox" id="unique-amount-box" onChange="change_input_state(this)" checked>
+            <label for="unique-amount-box" style="margin-left:10px; margin-right:5px">Max</label><input type="checkbox" id="unique-amount-box" onChange="change_input_state(this)" checked>
+            <span style="width:90px; margin-left:40px; margin-right:20px">Цвет рамки: </span>
+            <select id="border-color-selector" class="form-select form-select-sm" style="width:100px">
+                <option value="black">Чёрный</option>
+                <option value="white">Белый</option>
+                <option value="grey">Серый</option>
+            </select>
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-0">
             <div class="d-flex flex-row " style="margin-bottom: 8px">
@@ -320,6 +326,7 @@
             let unique_checkbox = row.getElementsByClassName(`load-files-unique-checkbox-${file_id}`)[0];
             let multi_unique_checkbox = row.getElementsByClassName(`load-files-multi-unique-checkbox-${file_id}`)[0];
             let unique_amount = projectData.length-Number(rowIndex)+1;
+            let border_color = document.getElementById('border-color-selector').value;
             if (!Number(document.getElementById('unique-amount-box').checked)){
                 unique_amount = Number(document.getElementById('unique-amount').value);
             }
@@ -333,6 +340,7 @@
                 formData.append("propagate", [Number(multi_unique_checkbox.checked), unique_amount]);
                 let preset_selector = document.getElementById('preset-selector');
                 formData.append("preset", preset_selector.options[preset_selector.selectedIndex].value);
+                formData.append("border_color", border_color);
 
                 $.ajax({
                 url: "{%url 'load_files_2'%}",

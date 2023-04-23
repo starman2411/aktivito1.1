@@ -77,8 +77,8 @@ def resize_image(img, ratio):
     return img
 
 
-def add_border(img, border):
-    img = ImageOps.expand(img, border=border)
+def add_border(img, border, border_color):
+    img = ImageOps.expand(img, border=border, fill=border_color)
     if border:
         img = img.crop((random.randrange(0, border, 1), random.randrange(0, border, 1), img.size[0], img.size[1]))
     return img
@@ -100,13 +100,13 @@ def image_filters(img, bottom_contrast, top_contrast, brightness, color_fluctuat
         return img
 
 
-def _make_unique(files, borders, resize_ratios, contrast_bottoms, contrast_tops, brightnesses, color_fluctuation):
+def _make_unique(files, borders, resize_ratios, contrast_bottoms, contrast_tops, brightnesses, color_fluctuation, border_color):
     for file in files:
         imagename = file
         delete_metatags(imagename)
         img = Image.open(imagename)
         img = resize_image(img, random.choice(resize_ratios))
-        img = add_border(img, random.choice(borders))
+        img = add_border(img, random.choice(borders), border_color)
         img = image_filters(img,
                             random.choice(contrast_bottoms),
                             random.choice(contrast_tops),
@@ -273,7 +273,7 @@ def load_files_1(request):
     for f in files:
         url = _handle_uploaded_file(f, request.user.username, request.POST['project_name'])
         if int(request.POST['make_unique']):
-            _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])))
+            _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])), request.POST['border_color'])
         if url:
             urls.append(settings.FULL_DOMEN_ADRESS + 'media/' + url)
     return JsonResponse({'urls': urls})
@@ -290,13 +290,13 @@ def load_files_2(request):
         if propagate_trigger:
             for _ in range(propagate_amount):
                 url = _handle_uploaded_file(f, request.user.username, request.POST['project_name'])
-                _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])))
+                _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])), request.POST['border_color'])
                 if url:
                     urls.append(settings.FULL_DOMEN_ADRESS + 'media/' + url)
         else:
             url = _handle_uploaded_file(f, request.user.username, request.POST['project_name'])
             if int(request.POST['make_unique']):
-                _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])))
+                _make_unique([f'{settings.MEDIA_ROOT}/'+url], *get_preset(str(request.POST['preset'])), request.POST['border_color'])
             if url:
                 urls.append(settings.FULL_DOMEN_ADRESS + 'media/' + url)
     return JsonResponse({'urls': urls})

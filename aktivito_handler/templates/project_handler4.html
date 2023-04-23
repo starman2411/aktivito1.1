@@ -159,6 +159,12 @@
             <option value="{{preset.preset_name}}">{{preset.preset_name}}</option>
             {% endfor %}
             </select>
+            <span style="width:90px; margin-left:40px; margin-right:20px">Цвет рамки: </span>
+            <select id="border-color-selector" class="form-select form-select-sm" style="width:100px">
+                <option value="black">Чёрный</option>
+                <option value="white">Белый</option>
+                <option value="grey">Серый</option>
+            </select>
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-0">
             <div class="d-flex flex-row " style="margin-bottom: 8px">
@@ -313,7 +319,8 @@
         function send_files(files, row_id, row){
             document.getElementById('LoadFilesModalText').innerHTML = 'Идёт загрузка...';
             let unique_checkbox = row.getElementsByClassName(`load-files-checkbox`)[0];
-            let unique_trigger = Number(unique_checkbox.checked)
+            let unique_trigger = Number(unique_checkbox.checked);
+            let border_color = document.getElementById('border-color-selector').value;
             let cells_edited = {};
             let formData = new FormData();
             if (files.length){
@@ -325,6 +332,8 @@
                 formData.append("make_unique", Number(unique_checkbox.checked));
                 let preset_selector = document.getElementById('preset-selector');
                 formData.append("preset", preset_selector.options[preset_selector.selectedIndex].value);
+                formData.append("border_color", border_color);
+
                 $.ajax({
                         url: "{%url 'load_files_1'%}",
                         dataType: 'json',
