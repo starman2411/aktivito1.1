@@ -454,13 +454,18 @@ def new_project_view(request):
 
 def delete_project(request):
     project_name = request.POST['project_name']
+    valid_project_name = make_valid_name(project_name)
     username = request.user.username
     if project_name in [project.project_name for project in Project.objects.filter(authors__contains=[username])]:
         project = Project.objects.filter(authors__contains=[username], project_name=project_name)[0]
         authors = list(project.authors)
         authors.remove(username)
-        project.authors = authors
-        project.save()
+        if not authors:
+            project.delete()
+            shutil.rmtree(f'{settings.BASE_DIR}/media/projects/{request.user.username}/{valid_project_name}')
+        else:
+            project.authors = authors
+            project.save()
 
     else:
         return JsonResponse({'notexist': 'success'})
