@@ -730,6 +730,8 @@ let gridOptions = {
   rowHeight: 68,
   getRowId: params => params.data.id,
   rowSelection: 'multiple',
+  alwaysShowVerticalScroll: true,
+
 };
 
 
